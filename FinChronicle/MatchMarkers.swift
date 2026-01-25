@@ -25,11 +25,15 @@ enum Match {
                 }
             }
         }
-        
         func matchMarker(peg:Int)-> some View {
-            Circle()
+            let exactCount: Int = matches.count(where: { match in match == .exact })
+            let foundCount: Int = matches.count(where: { match in match != .nomatch })
+            return Circle()
+                .fill(exactCount > peg ? Color.primary: Color.clear)
+                .strokeBorder(foundCount > peg ? Color.primary: Color.clear)
+                .aspectRatio(1, contentMode: .fit)
         }
     }
 #Preview {
-    MatchMarkers(matches:[.exact, .inexact, .nomatch])
+    MatchMarkers(matches:[.exact, .inexact, .nomatch, .exact])
 }
