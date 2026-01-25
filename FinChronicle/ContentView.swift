@@ -9,22 +9,23 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
+        
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-                .font(.largeTitle, )
-            Text("Hello, Wlcome 193p!")
-                .font(.largeTitle)
-                .foregroundStyle(.green)
-                .font(.largeTitle)
-            Circle()
-                .background()
-                .foregroundColor(.blue)
-                .padding(.horizontal)
+            pegs(colors:[.red,.green,.blue,.yellow])
+            pegs(colors: [.red,.green,.blue,.green])
+            pegs(colors: [.red,.green,.red,.blue])
+            pegs(colors: [.red,.blue,.red,.yellow])
             
+        }.padding()
+      
+    }
+    func pegs(colors:Array<Color>)-> some View {
+        HStack {
+            Circle().foregroundStyle(colors[0])
+            Circle().foregroundStyle(colors[1])
+            Circle().foregroundStyle(colors[2])
+            Circle().foregroundStyle(colors[3])
         }
-        .padding()
     }
 }
 
