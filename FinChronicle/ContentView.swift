@@ -23,9 +23,26 @@ struct ContentView: View {
         HStack {
             ForEach(colors.indices, id: \.self) {
                 index in
-                Circle().foregroundStyle(colors[index])
+//                Circle().foregroundStyle(colors[index])
+                RoundedRectangle(cornerRadius: 10)
+                    .aspectRatio(1, contentMode: .fit)
+                    .foregroundStyle(colors[index])
             }
-
+     MatchMarkers()
+        }
+    }
+    struct MatchMarkers: View {
+        var body: some View {
+            HStack {
+                VStack {
+                    Circle()
+                    Circle()
+                }
+                VStack{
+                    Circle()
+                    Circle()
+                }
+            }
         }
     }
 }
