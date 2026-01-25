@@ -11,9 +11,9 @@ struct ContentView: View {
     var body: some View {
         
         VStack {
-            pegs(colors:[.red,.green,.blue,.yellow])
+            pegs(colors:[.green,.red,.blue,.yellow])
             pegs(colors: [.red,.green,.blue,.green])
-            pegs(colors: [.red,.green,.red,.blue])
+            pegs(colors: [.blue,.green,.red,.blue])
             pegs(colors: [.red,.blue,.red,.yellow])
             
         }.padding()
@@ -21,10 +21,11 @@ struct ContentView: View {
     }
     func pegs(colors:Array<Color>)-> some View {
         HStack {
-            Circle().foregroundStyle(colors[0])
-            Circle().foregroundStyle(colors[1])
-            Circle().foregroundStyle(colors[2])
-            Circle().foregroundStyle(colors[3])
+            ForEach(colors.indices, id: \.self) {
+                index in
+                Circle().foregroundStyle(colors[index])
+            }
+
         }
     }
 }
