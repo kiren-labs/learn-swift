@@ -13,11 +13,11 @@ struct CodeBreaker {
     var masterCode: Code = Code(kind: .master)
     var guess: Code = Code(kind: .guess)
     var attempts: [Code] = []
-    let pegChoices: [Peg] = [.red, .blue, .yellow, .green]
+    let pegChoices: [Peg] = Array(repeating: Code.missing, count: 4)
     
    mutating func attemptGuess() {
         var attempt =  guess
-        attempt.kind = .attempt
+       attempt.kind = .attempt(guess.match(against: masterCode))
         attempts.append(attempt)
     }
     
@@ -39,11 +39,19 @@ struct Code {
     var pegs: [Peg] = [.green, .red, .blue, .yellow]
     static var missing: Peg = .clear
     
-    enum Kind {
+    enum Kind: Equatable {
         case master
         case guess
-        case attempt
+        case attempt([Match])
         case unkown
+    }
+    
+    var matches: [Match] {
+        switch kind {
+        case .attempt(let matches):
+return matches
+        default: return []
+        }
     }
     
     func match(against otherCode: Code) -> [Match] {

@@ -20,16 +20,22 @@ struct CodeBreakerView: View {
                     view(for: game.attempts[index])
                 }
             }
-            Button("Guess") {
-                withAnimation {
-                    game.attemptGuess()
-                }
-            }
+           
              
         }.padding()
             
       
     }
+    var guessButton: some View {
+        Button("Guess") {
+            withAnimation {
+                game.attemptGuess()
+            }
+        }
+        .font(.system(size: 80))
+        .minimumScaleFactor(0.1)
+    }
+     
     func view(for code : Code) -> some View {
 
         HStack {
@@ -45,7 +51,12 @@ struct CodeBreakerView: View {
                         }
                     }
             }
-            MatchMarkers(matches: code.match(against: game.masterCode))
+            MatchMarkers(matches: code.matches)
+                .overlay {
+                    if code.kind == .guess {
+                        guessButton
+                    }
+                }
         }
     }
 
