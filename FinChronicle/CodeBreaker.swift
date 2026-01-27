@@ -12,8 +12,15 @@ typealias Peg = Color
 struct CodeBreaker {
     var masterCode: Code = Code(kind: .master)
     var guess: Code = Code(kind: .guess)
-    var attempt: [Code] = []
+    var attempts: [Code] = []
     let pegChoices: [Peg] = [.red, .blue, .yellow, .green]
+    
+    func attemptGuess() {
+        var attempt =  guess
+        attempt.kind = .attempt
+        attempts.append(attempt)
+    }
+    
     mutating func changeGuessPeg(at index:Int) {
         let existingPeg = guess.pegs[index]
         if let indexOfExistingPegChoices = pegChoices.firstIndex(of: existingPeg) {

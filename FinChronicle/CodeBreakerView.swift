@@ -15,6 +15,13 @@ struct CodeBreakerView: View {
         VStack {
             view(for: game.masterCode)
             view(for: game.guess)
+            ForEach(game.attempts.indices, id: \.self) { index in
+                view(for: game.attempts[index])
+            }
+            
+            Button("Guess") {
+                game.attemptGuess()
+            }
 //            pegs(colors: game.attempt[0])
 //            pegs(colors: [.red,.blue,.red,.yellow])
              
