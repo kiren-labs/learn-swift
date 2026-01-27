@@ -15,7 +15,7 @@ struct CodeBreaker {
     var attempts: [Code] = []
     let pegChoices: [Peg] = [.red, .blue, .yellow, .green]
     
-    func attemptGuess() {
+   mutating func attemptGuess() {
         var attempt =  guess
         attempt.kind = .attempt
         attempts.append(attempt)

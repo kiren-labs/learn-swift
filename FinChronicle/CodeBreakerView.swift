@@ -14,18 +14,19 @@ struct CodeBreakerView: View {
         
         VStack {
             view(for: game.masterCode)
-            view(for: game.guess)
-            ForEach(game.attempts.indices, id: \.self) { index in
-                view(for: game.attempts[index])
+            ScrollView {
+                view(for: game.guess)
+                ForEach(game.attempts.indices.reversed(), id: \.self) { index in
+                    view(for: game.attempts[index])
+                }
             }
+                Button("Guess") {
+                    game.attemptGuess()
+                }
             
-            Button("Guess") {
-                game.attemptGuess()
-            }
-//            pegs(colors: game.attempt[0])
-//            pegs(colors: [.red,.blue,.red,.yellow])
              
         }.padding()
+            
       
     }
     func view(for code : Code) -> some View {
