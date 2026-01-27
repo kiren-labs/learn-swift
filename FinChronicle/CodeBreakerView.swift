@@ -45,7 +45,7 @@ struct CodeBreakerView: View {
                         }
                     }
             }
-            MatchMarkers(matches: [.exact,.inexact,.nomatch,.exact])
+            MatchMarkers(matches: code.match(against: game.masterCode))
         }
     }
 
