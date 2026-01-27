@@ -20,10 +20,11 @@ struct CodeBreakerView: View {
                     view(for: game.attempts[index])
                 }
             }
-                Button("Guess") {
+            Button("Guess") {
+                withAnimation {
                     game.attemptGuess()
                 }
-            
+            }
              
         }.padding()
             
