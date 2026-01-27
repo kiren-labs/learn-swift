@@ -12,7 +12,7 @@ typealias Peg = Color
 struct CodeBreaker {
     var masterCode: Code = Code(kind: .master)
     var guess: Code = Code(kind: .guess)
-    var attempt: [Code] = [Code]()
+    var attempt: [Code] = []
     let pegChoices: [Peg] = [.red, .blue, .yellow, .green]
 }
 
