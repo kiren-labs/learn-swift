@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct CodeBreakerView: View {
     let game: CodeBreaker = CodeBreaker()
     
     var body: some View {
@@ -37,5 +37,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    CodeBreakerView()
 }
