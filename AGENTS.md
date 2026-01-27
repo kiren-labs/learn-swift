@@ -2,108 +2,97 @@
 
 ## 1. Project Context
 
-This is a **React Native** mobile application targeting **Android** and **iOS** for the Hexalite Integrated App (Driver & Dispatcher Management System).
+This is a **native iOS application** built with **SwiftUI** for financial chronicle tracking and code-breaking game functionality.
 
-* **UI:** React Native with React Native Paper (Material Design) and React Native Elements.
-* **Philosophy:** Feature-based modular architecture with Redux for state management.
-* **Target Users:** Drivers and Dispatchers with role-based UI/UX.
-* **Platform Support:** Android 6.0+ (API 23+) targeting API 35, iOS 13.4+.
+* **UI Framework:** SwiftUI (declarative UI)
+* **Language:** Swift 5.7+
+* **Architecture:** MVVM (Model-View-ViewModel) with SwiftUI
+* **Target Platform:** iOS 15.0+
+* **Features:** 
+  * CodeBreaker game with color peg matching
+  * Match Markers functionality
+  * Financial chronicle tracking (in development)
 
-## 2. Technology Stack (Strict Versions)
+## 2. Technology Stack
 
-* **Node.js:** 18.17.0 LTS (minimum: 18+).
-* **React Native:** 0.74.5.
-* **React:** 18.2.0.
-* **TypeScript:** 5.0.4.
-* **Navigation:** @react-navigation (v6.x) with native-stack, drawer, and bottom-tabs.
-* **State Management:** Redux 4.2.0 + Redux-Saga 0.16.0 + Redux-Thunk.
-* **Form Management:** Redux-Form 7.2.0.
-* **Storage:**
-  * react-native-mmkv 2.12.2 (Fast key-value storage)
-  * @react-native-async-storage/async-storage 2.1.1 (Persistent storage)
-  * react-native-sensitive-info 5.5.9 (Secure storage for tokens)
-* **Maps & Location:**
-  * react-native-maps 1.17.3
-  * react-native-geolocation-service 5.3.1
-* **Network:** REST APIs with custom interceptor service (NO GraphQL/Apollo).
-* **Build Tools:**
-  * JDK 17+ (Android)
-  * Xcode 15.0+ (iOS)
-* **Analytics:** Dynatrace 2.307.1.
+* **Language:** Swift 5.7+
+* **UI Framework:** SwiftUI (iOS 15.0+)
+* **IDE:** Xcode 15.0+
+* **Deployment Target:** iOS 15.0+
+* **Architecture Pattern:** MVVM (Model-View-ViewModel)
+* **State Management:** 
+  * `@State`, `@StateObject`, `@ObservedObject` (SwiftUI)
+  * `ObservableObject` protocol for view models
+* **Data Persistence:**
+  * UserDefaults (Simple key-value storage)
+  * CoreData (Relational database - when needed)
+  * Keychain (Secure storage for sensitive data)
+* **Networking:** URLSession with async/await
+* **Testing:**
+  * XCTest (Unit testing)
+  * XCUITest (UI testing)
+* **Version Control:** Git + GitHub
+* **Dependency Management:** Swift Package Manager (SPM)
 
-## 3. High-Level Architecture
+## 3. Project Architecture & Structure
 
-We use a **Feature-Based Modular** architecture combined with **Redux + Redux-Saga** for state management. Each feature is self-contained within `src/[feature-name]`.
+We use **MVVM (Model-View-ViewModel)** architecture with SwiftUI's declarative paradigm.
 
 ### Project Structure
 
 ```
-hexalite-integrated-app/
-├── src/
-│   ├── actions/              # Redux action creators
-│   ├── apis/                 # API layer (REST endpoints)
-│   ├── components/           # Feature-specific composite components
-│   ├── model/                # Domain models & type definitions
-│   ├── reducers/             # Redux reducers
-│   ├── saga/                 # Redux-Saga side effects
-│   ├── screen/               # Screen components
-│   ├── services/             # Business logic services
-│   ├── shared/               # Shared utilities, components, services
-│   ├── store/                # Redux store configuration
-│   ├── util/                 # Utility functions
-│   ├── [feature-modules]/    # Self-contained feature modules
-│   │   ├── assignment-list/  # Assignment management
-│   │   ├── service-detail/   # Service detail workflow
-│   │   ├── map-view/         # Map integration
-│   │   ├── assign-driver/    # Driver assignment
-│   │   ├── scheduled-dispatch/ # Dispatch scheduling
-│   │   ├── auth/             # Authentication flows
-│   │   ├── splash/           # App initialization
-│   │   └── terms-of-service/ # Terms acceptance
-│   ├── appNavigator.tsx      # Navigation configuration
-│   └── appConstants.ts       # Application constants
-├── android/                  # Android native code
-├── ios/                      # iOS native code
-├── __mocks__/                # Global mocks for testing
-├── tests/                    # Integration tests
-└── package.json              # Dependencies
+FinChronicle/
+├── FinChronicle/
+│   ├── FinChronicleApp.swift        # App entry point
+│   ├── Models/                      # Data models
+│   │   ├── CodeBreaker.swift       # CodeBreaker game logic
+│   │   └── MatchMarkers.swift      # Match markers logic
+│   ├── Views/                       # SwiftUI Views
+│   │   ├── CodeBreakerView.swift   # CodeBreaker UI
+│   │   └── FinChronicleViews/
+│   │       └── FinChronicleMainView.swift
+│   ├── ViewModels/                  # View models (to be added)
+│   ├── Services/                    # Business logic services
+│   ├── Utilities/                   # Helper functions & extensions
+│   ├── Resources/                   # Assets, strings, configs
+│   │   └── Assets.xcassets/        # Images, colors, icons
+│   └── Info.plist                   # App configuration
+├── FinChronicleTests/               # Unit tests
+│   └── FinChronicleTests.swift
+├── FinChronicleUITests/             # UI tests
+│   ├── FinChronicleUITests.swift
+│   └── FinChronicleUITestsLaunchTests.swift
+├── FinChronicle.xcodeproj/          # Xcode project
+├── .gitignore                       # Git ignore rules
+├── README.md                        # Project documentation
+└── AGENTS.md                        # Development guidelines (this file)
 ```
 
-### Feature Module Structure
-
-Every feature **SHOULD** follow this structure:
-
-* **`[feature-name].action.ts`** - Redux action creators
-* **`[feature-name].saga.ts`** - Redux-Saga side effects (API calls, async logic)
-* **`[feature-name].reducer.ts`** - Redux reducer for state management
-* **`[feature-name].constant.ts`** - Action type constants
-* **`[feature-name].model.ts`** - Domain models & TypeScript interfaces
-* **`[feature-name].screen.tsx`** - Screen component (route entry point)
-* **`[feature-name].component.tsx`** - Main feature component
-* **`[feature-name].component.style.ts`** - StyleSheet definitions
-* **`components/`** - Feature-specific UI components
-* **`__test__/` or `__tests__/`** - Unit & integration tests
-
-### Example: Assignment List Module
+### MVVM Pattern
 
 ```
-assignment-list/
-├── assignment-list.action.js         # Actions (fetch, update)
-├── assignment-list.saga.ts           # API calls, side effects
-├── assignment-list.reducer.ts        # State management
-├── assignment-list.constant.ts       # Action types
-├── assignment-list.screen.tsx        # Screen wrapper
-├── assignment-list.component.tsx     # Main list component
-├── assignment-list.model.ts          # Assignment model
-├── driver/                           # Driver-specific logic
-│   ├── assignment-list-driver.saga.ts
-│   └── assignment-list-driver.reducer.ts
-├── component/                        # Reusable components
-│   ├── AssignmentCard.tsx
-│   └── AssignmentFilter.tsx
-└── __test__/                         # Unit tests
-    └── assignment-list.spec.ts
+┌─────────┐         ┌──────────────┐         ┌───────┐
+│  View   │────────>│  ViewModel   │────────>│ Model │
+│ (SwiftUI)│<────────│(ObservableObject)│<────────│ (Data)│
+└─────────┘         └──────────────┘         └───────┘
+    │                       │
+    │                       │
+ @State              @Published
+ @ObservedObject
 ```
+
+* **Model:** Pure Swift data structures (struct/class)
+* **View:** SwiftUI views (declarative UI)
+* **ViewModel:** `ObservableObject` classes with `@Published` properties
+
+### File Naming Conventions
+
+* **Models:** `[Entity].swift` (e.g., `CodeBreaker.swift`, `User.swift`)
+* **Views:** `[Feature]View.swift` (e.g., `CodeBreakerView.swift`, `LoginView.swift`)
+* **ViewModels:** `[Feature]ViewModel.swift` (e.g., `CodeBreakerViewModel.swift`)
+* **Services:** `[Purpose]Service.swift` (e.g., `NetworkService.swift`, `AuthService.swift`)
+* **Extensions:** `[Type]+[Purpose].swift` (e.g., `String+Validation.swift`, `Color+Theme.swift`)
+* **Tests:** `[Feature]Tests.swift` (e.g., `CodeBreakerTests.swift`)
 
 ## 4. Coding Rules & Patterns
 
