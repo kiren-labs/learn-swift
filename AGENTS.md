@@ -94,616 +94,892 @@ FinChronicle/
 * **Extensions:** `[Type]+[Purpose].swift` (e.g., `String+Validation.swift`, `Color+Theme.swift`)
 * **Tests:** `[Feature]Tests.swift` (e.g., `CodeBreakerTests.swift`)
 
-## 4. Coding Rules & Patterns
+## 4. Coding Rules & Swift Best Practices
 
-### A. Navigation
+### A. SwiftUI View Design
 
-* **Library:** `@react-navigation/native` v6.x with native-stack, drawer, and bottom-tabs.
-* **Pattern:** Stack-based navigation with drawer overlay for main screens.
-* **Implementation:**
-  * Root navigator: `RootStack` (Native Stack Navigator)
-  * Authenticated screens: `RootDrawerScreen` (Drawer Navigator)
-  * Define routes in `appNavigator.tsx`
-  * Use `navigationRef` from `/src/shared/services/navigation/RootNavigation` for imperative navigation
-* **Navigation Service:**
-  * `NavigationService.navigateTo(routeName, params)` - Navigate to screen
-  * `NavigationService.goBack()` - Go back
-  * `NavigationService.getCurrentRoute()` - Get current route name
-* **Route Constants:** Define route names in `appConstants.ts` under `NavigationConstant`
-* **Deep Linking:** Supported via `link-routes/` module
-* **FORBIDDEN:** Do NOT use React Navigation v5 or lower patterns. Always use v6+ APIs.
+* **Keep Views Small:** Break large views into smaller, reusable components
+* **Extract Subviews:** Use `@ViewBuilder` for complex layouts
+* **Use Computed Properties:** For derived state and conditional views
+* **Naming:** Views should end with `View` suffix (e.g., `CodeBreakerView`)
 
-### B. State Management (Redux + Redux-Saga)
+```swift
+// ✅ Good: Small, focused view
+struct GameBoardView: View {
+    var body: some View {
+        VStack {
+            HeaderView()
+            PegGridView()
+            ActionButtonsView()
+        }
+    }
+}
 
-* **Redux Store:** Configured in `/src/store/configureStore.js`
-* **Middleware:** Redux-Saga, Redux-Thunk, Dynatrace logger
-* **State Tree:** See comprehensive list in architecture analysis above
-* **Pattern:**
-  * Define actions in `[feature].action.ts` with action creators
-  * Define action type constants in `[feature].constant.ts`
-  * Handle side effects in `[feature].saga.ts` using Redux-Saga
-  * Update state in `[feature].reducer.ts` with pure functions
-  * Connect components using `useSelector` and `useDispatch` hooks (functional components) or `connect` HOC (class components)
-* **Selectors:** Define selectors for derived state in reducer files or separate selector files
-* **Forms:** Use Redux-Form for complex forms (service details, EVCRF)
-* **FORBIDDEN:**
-  * Do NOT mutate state directly in reducers
-  * Do NOT put non-serializable values in state (functions, promises, classes)
-  * Do NOT use `redux-saga-testing` for production code (dev dependency only)
-
-### C. API Layer & Network
-
-* **API Modules:** Located in `/src/apis/`
-* **Pattern:** Each backend service has a dedicated API module
-* **Core APIs:**
-  * `jobMonitoringApi.ts` - Assignments & cases
-  * `userManagementApi.ts` - Auth & user data
-  * `guacApi.ts` - Token management
-  * `serviceBrokerApi.ts` - Service operations
-  * `fleetManagementApi.ts` - Fleet & driver data
-  * `feConfigApi.ts` - Feature flags
-  * `translationApi.ts` - i18n translations
-  * `googleMapApi.ts` - Google Maps APIs
-* **Interceptor Service:** `/src/services/interceptorService.ts`
-  * Handles authentication (GUAC-Authorization header)
-  * Automatic token refresh on 401
-  * Request/response logging
-  * Offline cache integration
-  * Error handling with retry logic
-* **Error Handling:**
-  * Do NOT use bare `try/catch` without proper error handling
-  * Use interceptor's centralized error handling
-  * Display user-friendly errors via `CommonService.showError()`
-* **Offline Support:**
-  * Cache responses with `offlineApiCacheService` (MMKV-based)
-  * Queue failed requests with `requestQueueService`
-  * Default cache expiration: 3 days
-* **Environment Configuration:**
-  * API hosts defined in `.env` files (e.g., `.env.dev-aws`, `.env.prod`)
-  * Use `react-native-config` to access environment variables
-* **FORBIDDEN:**
-  * Do NOT use Axios, Ktor, or third-party HTTP clients
-  * Do NOT hardcode API URLs in components or sagas
-  * Do NOT use GraphQL/Apollo
-
-### D. Authentication & Security
-
-* **Authentication Service:** `/src/services/authService.ts`
-* **Flow:**
-  1. User enters credentials
-  2. Call `authService.authentication(username, password, subscriptionCountry)`
-  3. Service validates via `userManagementApi.login()`
-  4. On success: Save tokens in secure storage, fetch user config, link device
-  5. Navigate to Terms of Service (if not accepted) or main screen
-* **Token Storage:**
-  * Use `react-native-sensitive-info` for tokens (encrypted)
-  * Access token: `token`
-  * Refresh token: `refresh_token`
-* **Token Refresh:**
-  * Automatic on 401 response
-  * Handled by `interceptorService`
-  * Subscriber queue pattern to avoid duplicate refresh requests
-* **Multi-Factor Authentication:**
-  * Biometric (fingerprint/face ID): `authService.loginWithBiometric()`
-  * OTP: Via `otpService` and `OtpInputScreen`
-  * Configuration: Per BU level (mandatory/optional)
-* **Logout:**
-  * Call `authService.logOut()`
-  * Clears tokens, cache, Redux state
-  * Resets navigation to Login screen
-* **FORBIDDEN:**
-  * Do NOT store tokens in AsyncStorage (use secure storage)
-  * Do NOT log tokens or sensitive data
-  * Do NOT bypass MFA if configured
-
-### E. Storage
-
-* **Storage Types:**
-  * **Secure Storage:** `react-native-sensitive-info` for tokens, credentials
-  * **Fast Storage:** `react-native-mmkv` for cache, preferences (10x faster than AsyncStorage)
-  * **Persistent Storage:** `@react-native-async-storage/async-storage` for non-sensitive data
-* **Services:**
-  * `asyncStorageService.ts` - AsyncStorage wrapper
-  * `mmkvStorageService.ts` - MMKV wrapper
-  * `offlineApiCacheService.ts` - API response caching
-* **Cache Management:**
-  * Prefix-based keys (e.g., `API_CACHE_`, `OFFLINE_QUEUE_`)
-  * Selective invalidation
-  * Parallel Promise.all operations for batch reads/writes
-* **FORBIDDEN:**
-  * Do NOT use AsyncStorage for tokens or sensitive data
-  * Do NOT use raw storage APIs (always use service wrappers)
-
-### F. Component Design & Shared Components
-
-* **Shared Components:** Located in `/src/shared/components/`
-* **Rule:** Shared components must be GENERIC and REUSABLE
-  * Accept props for configuration (text, colors, callbacks)
-  * No domain-specific logic (e.g., "Cart", "User", "Assignment")
-  * No direct Redux connections (pass data via props)
-  * No hardcoded navigation (use callbacks)
-* **Available Shared Components:**
-  * `button/` - Generic button with variants
-  * `custom-text/` - Typography wrapper
-  * `custom-picker/` - Dropdown/picker
-  * `floating-label-text-input/` - Input fields with floating labels
-  * `header/` - Header bars (main, back, hamburger variants)
-  * `loading-overlay/` - Loading spinner
-  * `animated-view/` - Animation wrapper
-  * `mapview/` - Map components
-  * `modal/` - Modal dialogs (ask, contact, reject, lunch break)
-  * `switch/` - Toggle switch
-* **Feature-Specific Components:** Located in `/src/components/`
-  * Can contain domain logic
-  * Can connect to Redux
-  * Can use navigation
-* **Styling:**
-  * Use StyleSheet API for styles
-  * Separate style files: `[component].style.ts`
-  * Import colors/fonts from `appConstants.ts`
-  * Use responsive design (consider device dimensions)
-* **Modification Protocol:**
-  * **ALLOWED:** Adding new generic components to `/src/shared/components/`
-  * **ALLOWED:** Enhancing shared components with generic props
-  * **FORBIDDEN:** Adding domain-specific logic to shared components
-  * **FORBIDDEN:** Modifying shared components for one-off feature requirements
-  * **INSTEAD:** Wrap shared components in feature-specific components for customization
-
-### G. Cross-Feature Communication
-
-* **Rule:** Features should be loosely coupled
-* **Pattern:**
-  * If Feature A needs data from Feature B:
-    * Feature A dispatches a Redux action
-    * Feature B's saga handles the action and updates state
-    * Feature A reads from Redux store via selector
-  * Example: `assignment-list` dispatches `FETCH_ASSIGNMENT_DETAIL` action, `service-detail` saga handles it
-* **Navigation Between Features:**
-  * Use `NavigationService.navigateTo()` or `navigation.navigate()`
-  * Pass params via navigation params (not Redux state)
-  * Example: Navigate from assignment list to service detail with assignment ID
-* **FORBIDDEN:**
-  * Do NOT import feature components directly across features
-  * Do NOT create circular dependencies between features
-
-### H. Models & Type Safety
-
-* **Location:** `/src/model/` and `/src/shared/models/`
-* **Pattern:**
-  * Define TypeScript interfaces for all domain entities
-  * Use classes for entities with computed properties or methods
-  * Static factory methods (e.g., `AssignmentModel.of(data)`)
-* **Core Models:**
-  * `AssignmentModel` - Assignment entity
-  * `ServiceDeliveryItemModel` - Service/tariff item
-  * `DriverModel` - Driver profile
-  * `TruckModel` - Vehicle information
-  * `UserProfile.model` - User with permissions
-  * `ConvertedResponse.model` - Standard API response wrapper
-* **API Response Pattern:**
-  ```typescript
-  interface ConvertedResponse<T> {
-    isSuccess: boolean;
-    body: T;
-    errorKey: string;
-    msg: string;
-    msgCode: string;
-    status: number;
-  }
-  ```
-* **Type Safety:**
-  * Use TypeScript for all new code
-  * Avoid `any` type (use `unknown` or proper types)
-  * Define interfaces for props, state, API responses
-* **FORBIDDEN:**
-  * Do NOT use `any` type unless absolutely necessary
-  * Do NOT use JavaScript files for new code (use TypeScript)
-
-### I. Localization & Internationalization
-
-* **Library:** `i18n-js` v3.8.0
-* **Translation Service:** `/src/services/i18nService.ts`
-* **Pattern:**
-  * Translations fetched from backend via `translationApi`
-  * Cached in MMKV storage
-  * Fallback to English if translation not found
-* **Usage:**
-  * Import `I18n` from `i18n-js`
-  * Use `I18n.t('translation.key')` for translations
-  * Dynamic translations: `I18n.t('key', { variable: value })`
-* **Translation Keys:**
-  * Defined in backend (hexalite-translation service)
-  * Managed via Excel file in group_solution repo
-* **FORBIDDEN:**
-  * Do NOT hardcode user-facing strings
-  * Do NOT create local translation files (use backend API)
-
-### J. Testing
-
-* **Framework:** Jest + React Native Testing Library
-* **Test Files:** Co-locate tests with features in `__test__/` or `__tests__/` folders
-* **Naming:** `[feature].spec.ts` or `[feature].test.ts`
-* **Mocks:** Global mocks in `__mocks__/` at root level
-* **Patterns:**
-  * Unit tests: Test individual functions, models, reducers
-  * Component tests: Test component rendering & behavior
-  * Snapshot tests: Test UI stability (use sparingly)
-  * Saga tests: Test side effects with `redux-saga-testing`
-* **Coverage:** Run `npm run test` for coverage report
-* **FORBIDDEN:**
-  * Do NOT skip tests for critical paths (auth, payments, data mutations)
-  * Do NOT commit code with failing tests
-
-## 5. Implementation Details
-
-### Platform-Specific Code
-
-* **Pattern:** Use platform-specific files when necessary
-  * `component.android.tsx` - Android-specific implementation
-  * `component.ios.tsx` - iOS-specific implementation
-  * React Native automatically picks the correct file
-* **Platform Detection:** Use `Platform.OS` from `react-native`
-  ```typescript
-  import { Platform } from 'react-native';
-  if (Platform.OS === 'android') {
-    // Android-specific code
-  } else if (Platform.OS === 'ios') {
-    // iOS-specific code
-  }
-  ```
-* **Native Modules:**
-  * Android: `android/app/src/main/java/`
-  * iOS: `ios/gbmfDriverApp/`
-* **FORBIDDEN:**
-  * Do NOT use platform checks for UI styling (use responsive design)
-  * Do NOT create platform-specific features without product approval
-
-### Environment Configuration
-
-* **Pattern:** Use `.env` files for environment-specific configuration
-* **Available Environments:**
-  * `.env.dev-aws` - Development (AWS)
-  * `.env.qa` - QA
-  * `.env.uat-aws` - UAT (AWS)
-  * `.env.perf` - Performance testing
-  * `.env.prod` - Production
-* **Configuration Variables:**
-  * API hosts (SERVICE_BROKER_API_HOST, USER_MANAGEMENT_API_HOST, etc.)
-  * App version (APP_VERSION_CODE, APP_VERSION_NAME)
-  * CodePush keys (ANDROID_CODEPUSH_KEY, CODEPUSH_KEY for iOS)
-  * Google Maps API keys (GOOGLE_MAPS_API_KEY, etc.)
-* **Access:** Use `Config` from `react-native-config`
-  ```typescript
-  import Config from 'react-native-config';
-  const apiHost = Config.SERVICE_BROKER_API_HOST;
-  ```
-* **Android Configuration:**
-  * Product flavors in `android/app/build.gradle`
-  * Flavor-specific resources (strings, authorities)
-  * Build variants: `[flavor][buildType]` (e.g., `devawsDebug`, `prodRelease`)
-* **iOS Configuration:**
-  * Build configurations in Xcode project
-  * User-defined build settings (CODEPUSH_KEY, Env_BundleIdentifier, etc.)
-  * Schemes for each environment
-* **FORBIDDEN:**
-  * Do NOT commit API keys to `.env` files (use vault)
-  * Do NOT hardcode environment-specific values in code
-
-### Background Services & Geolocation
-
-* **Background Geolocation:** `/src/services/backgroundGeolocationService.ts`
-* **Pattern:**
-  * Android: Foreground service with persistent notification
-  * iOS: Background location updates with significant change monitoring
-* **Service:** `/src/services/foregroundService.ts` (Android-specific)
-* **Configuration:**
-  * Update interval: Configurable per BU
-  * Geofencing: Supported
-  * Battery optimization: Balanced mode
-* **FORBIDDEN:**
-  * Do NOT track location without user consent
-  * Do NOT drain battery with aggressive tracking
-
-### Push Notifications
-
-* **Service:** `/src/services/localNotificationService.ts`
-* **Firebase:** `@react-native-firebase/messaging`
-* **Pattern:**
-  * FCM for push notification delivery
-  * Local notifications for reminders
-  * Background handler for silent notifications
-* **Configuration:**
-  * Android: `google-services.json` (from vault)
-  * iOS: APNS certificate + FCM configuration
-* **Subscription:**
-  * Subscribe on login: `pushNotificationApi.subscribe(token, subscriptionCountry)`
-  * Unsubscribe on logout
-* **FORBIDDEN:**
-  * Do NOT show notifications without user permission
-  * Do NOT send sensitive data in notification payload
-
-### Code Push (OTA Updates)
-
-* **Service:** Standalone Code Push Server
-* **Configuration:**
-  * Android: `ANDROID_CODEPUSH_KEY`, `ANDROID_CODEPUSH_SERVER_URL` in `.env`
-  * iOS: `CODEPUSH_KEY`, `CODEPUSH_SERVER_URL` in Xcode build settings
-* **Deployments:**
-  * Multiple deployment targets per environment (dev, staging, production)
-  * Target versions with semantic versioning
-* **Release Process:**
-  * Jenkins automation for releases
-  * Manual release: `npm run codepush-release:android` / `npm run codepush-release:ios`
-* **FORBIDDEN:**
-  * Do NOT release code push without testing
-  * Do NOT target wrong deployment (could break production)
-
-### Performance Optimization
-
-* **Storage:**
-  * Use MMKV for frequently accessed data (10x faster than AsyncStorage)
-  * Batch read/write operations with Promise.all
-  * Selective cache invalidation (prefix-based)
-* **Network:**
-  * Cache API responses (3-day default expiration)
-  * Offline queue for failed requests
-  * Request deduplication in interceptor
-* **Rendering:**
-  * Use `React.memo` for expensive components
-  * Use `useMemo` and `useCallback` hooks for expensive computations
-  * Avoid inline styles and function definitions in render
-  * Use FlatList for long lists (virtualization)
-* **FORBIDDEN:**
-  * Do NOT block UI thread with heavy computations
-  * Do NOT render large lists without virtualization
-
-## 6. Third-Party Dependency Protocol
-
-Before adding **ANY** new library, follow this strict process:
-
-1. **Search Strategy:**
-   * Search on [npm](https://www.npmjs.com/) for React Native libraries
-   * Check React Native Directory: https://reactnative.directory/
-   * Verify React Native version compatibility (0.74.5)
-   * Check TypeScript support
-
-2. **Evaluation Criteria:**
-   * Is it actively maintained? (recent commits, issues addressed)
-   * Does it support both Android and iOS?
-   * Is it well-documented?
-   * What are the bundle size implications?
-   * Does it require native module linking?
-   * Are there security vulnerabilities? (check npm audit)
-
-3. **Comparison:**
-   * Do not simply pick the first result
-   * Compare at least 2-3 alternatives
-   * Consider: stars, downloads, issues, last update, license
-
-4. **Mandatory Approval:**
-   * You MUST stop and ask the user before editing `package.json` or build files
-   * Provide a summary like this:
-
-   > "To solve [Problem], I researched React Native libraries:
-   > 1. **Library A (vX.X.X):** [Pros/Cons]
-   > 2. **Library B (vX.X.X):** [Pros/Cons]
-   >
-   > I recommend **Library A** (Version X.X.X) because [Reason].
-   > This will require:
-   > - npm install (--legacy-peer-deps if needed)
-   > - pod install (iOS)
-   > - [Any native configuration steps]
-   >
-   > Shall I proceed?"
-
-5. **Installation Process:**
-   * Install with `npm install [package] --legacy-peer-deps` (if peer dependency conflicts)
-   * Run `cd ios && pod install` for iOS native dependencies
-   * Run `npm run instrumentDynatrace` after installing (Dynatrace integration)
-   * Test on both Android and iOS
-
-6. **FORBIDDEN:**
-   * Do NOT install libraries without user approval
-   * Do NOT use alpha/beta versions in production
-   * Do NOT ignore peer dependency warnings
-
-## 7. Build & Release Process
-
-### Development Builds
-
-**Android:**
-```bash
-# Set environment
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home
-export ANDROID_HOME=$HOME/Library/Android/sdk
-
-# Run on emulator/device
-npm run android:mode --mode=devawsDebug
-
-# Or with specific variant
-npm run android -- --variant devawsdebug
+// ❌ Bad: Monolithic view with too much logic
+struct GameView: View {
+    var body: some View {
+        VStack {
+            // 200+ lines of UI code
+        }
+    }
+}
 ```
 
-**iOS:**
-```bash
-# Install dependencies
-cd ios && pod install && cd ..
+* **FORBIDDEN:**
+  * Do NOT put business logic directly in views
+  * Do NOT make network calls from views
+  * Do NOT create massive 500+ line view files
 
-# Run on simulator
-npm run ios -- --simulator="iPhone 15"
+### B. State Management
 
-# Run on real device
-npx react-native run-ios --device "Device Name"
+**Local State (`@State`):**
+* Use for simple, view-local state
+* Always mark as `private`
+* Primitive types and simple structs only
 
-# Switch environment
-cp .env.dev-aws .env
-ENVFILE=.env.dev-aws npm run ios -- --configuration DEV-AWS
+```swift
+@State private var isGameActive = false
+@State private var selectedPeg: Peg = .red
 ```
 
-### Production Builds
+**Observable Objects (`@StateObject`, `@ObservedObject`):**
+* `@StateObject`: View owns the object (creates it)
+* `@ObservedObject`: View receives the object (passed in)
+* Use for complex state and business logic
 
-**Android:**
-1. Run `npm run bundle:android-wo-asset` to create JS bundle
-2. Open Android Studio
-3. Build > Generate Signed APK
-4. Select keystore: `android/key` (password: 123456)
-5. Key alias: `gbmf-driver-app-key`
-6. Select build variant (e.g., `prodRelease`)
+```swift
+class CodeBreakerViewModel: ObservableObject {
+    @Published var attempts: [Code] = []
+    @Published var isGameWon = false
+    
+    func submitGuess() {
+        // Business logic here
+    }
+}
 
-**iOS:**
-1. Open `ios/gbmfDriverApp.xcworkspace` in Xcode
-2. Select scheme (e.g., PROD)
-3. Product > Archive
-4. Distribute App > Enterprise
-5. Export IPA
+struct CodeBreakerView: View {
+    @StateObject private var viewModel = CodeBreakerViewModel()
+    
+    var body: some View {
+        // Use viewModel.attempts, viewModel.submitGuess()
+    }
+}
+```
 
-**FORBIDDEN:**
-* Do NOT build production without testing on staging
-* Do NOT commit keystore files
-* Do NOT use debug builds for production
+**Environment Objects (`@EnvironmentObject`):**
+* Use for app-wide shared state
+* User session, theme, settings
 
-## 8. Git Workflow & Conventions
+```swift
+class AppState: ObservableObject {
+    @Published var isLoggedIn = false
+    @Published var currentUser: User?
+}
+
+// In App:
+@main
+struct FinChronicleApp: App {
+    @StateObject private var appState = AppState()
+    
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environmentObject(appState)
+        }
+    }
+}
+```
+
+* **FORBIDDEN:**
+  * Do NOT use `@State` for complex objects
+  * Do NOT mutate `@ObservedObject` in subviews (pass callbacks)
+  * Do NOT create multiple `@StateObject` instances of the same ViewModel
+
+### C. Models & Data Types
+
+**Use Structs for Models:**
+```swift
+struct User: Codable, Identifiable {
+    let id: UUID
+    var name: String
+    var email: String
+}
+
+struct Code {
+    var kind: Kind
+    var pegs: [Peg]
+    
+    enum Kind: Equatable {
+        case master
+        case guess
+        case attempt(Match)
+    }
+}
+```
+
+**Use Classes for ViewModels:**
+```swift
+class CodeBreakerViewModel: ObservableObject {
+    @Published var game: CodeBreaker
+    @Published var message: String = ""
+    
+    init() {
+        self.game = CodeBreaker()
+    }
+}
+```
+
+**Type Aliases for Clarity:**
+```swift
+typealias Peg = Color  // Makes intent clear
+typealias UserID = UUID
+```
+
+* **FORBIDDEN:**
+  * Do NOT use classes for data models (use structs)
+  * Do NOT make models inherit from `NSObject` unless necessary
+  * Do NOT use `Any` or `AnyObject` without strong justification
+
+### D. Naming Conventions
+
+**Variables & Properties:**
+* Use `lowerCamelCase`
+* Be descriptive, avoid abbreviations
+* Boolean properties: Use `is`, `has`, `should` prefix
+
+```swift
+// ✅ Good
+var isGameActive: Bool
+var currentAttempt: Code
+var hasWonGame: Bool
+
+// ❌ Bad
+var active: Bool
+var att: Code
+var won: Bool
+```
+
+**Functions & Methods:**
+* Use `lowerCamelCase`
+* Start with verb (action-oriented)
+* Be specific about what it does
+
+```swift
+// ✅ Good
+func submitGuess()
+func validateUserInput()
+func fetchUserProfile()
+
+// ❌ Bad
+func guess()
+func check()
+func get()
+```
+
+**Types (Classes, Structs, Enums):**
+* Use `UpperCamelCase`
+* Singular nouns
+* Descriptive names
+
+```swift
+// ✅ Good
+struct CodeBreaker { }
+class UserViewModel { }
+enum GameState { }
+
+// ❌ Bad
+struct code_breaker { }
+class VM { }
+enum state { }
+```
+
+**Constants:**
+* Use `lowerCamelCase` for regular constants
+* Group related constants in enums
+
+```swift
+// ✅ Good
+let maxAttempts = 10
+let defaultPegColor = Color.red
+
+enum GameConstants {
+    static let maxAttempts = 10
+    static let pegCount = 4
+}
+
+// ❌ Bad
+let MAX_ATTEMPTS = 10
+let DEFAULTPEGCOLOR = Color.red
+```
+
+### E. Error Handling
+
+**Use Swift's Error Protocol:**
+```swift
+enum NetworkError: Error {
+    case invalidURL
+    case noInternetConnection
+    case serverError(Int)
+}
+
+func fetchData() async throws -> Data {
+    guard let url = URL(string: urlString) else {
+        throw NetworkError.invalidURL
+    }
+    // ... fetch logic
+}
+```
+
+**Handle Errors Gracefully:**
+```swift
+// ✅ Good: Proper error handling
+func loadUserProfile() {
+    Task {
+        do {
+            let profile = try await service.fetchProfile()
+            self.user = profile
+        } catch NetworkError.noInternetConnection {
+            self.errorMessage = "No internet connection"
+        } catch {
+            self.errorMessage = "Failed to load profile: \(error.localizedDescription)"
+        }
+    }
+}
+
+// ❌ Bad: Silent failures
+func loadUserProfile() {
+    Task {
+        let profile = try? await service.fetchProfile()
+        self.user = profile  // nil on error, no feedback to user
+    }
+}
+```
+
+* **FORBIDDEN:**
+  * Do NOT use `try!` in production code (use `try?` or proper `do-catch`)
+  * Do NOT swallow errors without logging or user feedback
+  * Do NOT use force unwrapping (`!`) without justification
+
+### F. Optionals & Safety
+
+**Prefer Optional Binding:**
+```swift
+// ✅ Good
+if let user = currentUser {
+    print("Welcome, \(user.name)")
+}
+
+guard let email = user.email else {
+    return
+}
+
+// ❌ Bad
+if currentUser != nil {
+    print("Welcome, \(currentUser!.name)")  // Force unwrap!
+}
+```
+
+**Use Nil Coalescing:**
+```swift
+// ✅ Good
+let username = user?.name ?? "Guest"
+let itemCount = cart.items.count.description
+
+// ❌ Bad
+let username = user != nil ? user!.name : "Guest"
+```
+
+**Optional Chaining:**
+```swift
+// ✅ Good
+let firstItemName = cart.items.first?.name ?? "No items"
+
+// ❌ Bad
+let firstItemName = cart.items.count > 0 ? cart.items[0].name : "No items"
+```
+
+* **FORBIDDEN:**
+  * Do NOT use force unwrapping (`!`) except in tests or truly guaranteed scenarios
+  * Do NOT use implicitly unwrapped optionals (`!`) for regular properties
+  * Do NOT nest multiple optional bindings excessively (extract functions)
+
+### G. Code Organization & Comments
+
+**File Structure:**
+```swift
+// 1. Imports
+import SwiftUI
+import Combine
+
+// 2. Main Type Definition
+struct CodeBreakerView: View {
+    // 3. Properties
+    @StateObject private var viewModel = CodeBreakerViewModel()
+    @State private var showAlert = false
+    
+    // 4. Body
+    var body: some View {
+        VStack {
+            // UI code
+        }
+    }
+    
+    // 5. Private Helper Views
+    private var headerView: some View {
+        Text("Code Breaker")
+    }
+    
+    // 6. Private Methods
+    private func handleSubmit() {
+        // Logic
+    }
+}
+
+// 7. Preview
+#Preview {
+    CodeBreakerView()
+}
+```
+
+**Comments:**
+* Use `//` for single-line comments
+* Use `/// ` for documentation comments
+* Add MARK comments for organization
+
+```swift
+// MARK: - Properties
+@Published var attempts: [Code] = []
+
+// MARK: - Public Methods
+/// Submits the current guess and checks against master code
+func submitGuess() {
+    // Implementation
+}
+
+// MARK: - Private Helpers
+private func validateGuess() -> Bool {
+    // Implementation
+}
+```
+
+* **FORBIDDEN:**
+  * Do NOT write obvious comments (`// Set name to "John"`)
+  * Do NOT leave commented-out code in commits
+  * Do NOT write novels - keep comments concise
+
+### H. Async/Await & Concurrency
+
+**Use Modern Swift Concurrency:**
+```swift
+// ✅ Good: async/await
+func fetchUserData() async throws -> User {
+    let (data, _) = try await URLSession.shared.data(from: url)
+    let user = try JSONDecoder().decode(User.self, from: data)
+    return user
+}
+
+// Call from SwiftUI:
+Button("Load Data") {
+    Task {
+        do {
+            let user = try await viewModel.fetchUserData()
+            self.currentUser = user
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+    }
+}
+```
+
+**Use MainActor for UI Updates:**
+```swift
+@MainActor
+class UserViewModel: ObservableObject {
+    @Published var user: User?
+    
+    func loadUser() async {
+        // This runs on main thread automatically
+        user = try? await service.fetchUser()
+    }
+}
+```
+
+* **FORBIDDEN:**
+  * Do NOT use completion handlers for new code (use async/await)
+  * Do NOT update UI from background threads
+  * Do NOT block the main thread with synchronous network calls
+
+## 5. Networking & API Integration
+
+### URLSession with Async/Await
+
+**Basic GET Request:**
+```swift
+struct NetworkService {
+    func fetchData<T: Decodable>(from url: URL) async throws -> T {
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw NetworkError.serverError
+        }
+        
+        return try JSONDecoder().decode(T.self, from: data)
+    }
+}
+```
+
+**POST Request with JSON Body:**
+```swift
+func postData<T: Encodable, R: Decodable>(
+    to url: URL,
+    body: T
+) async throws -> R {
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = try JSONEncoder().encode(body)
+    
+    let (data, _) = try await URLSession.shared.data(for: request)
+    return try JSONDecoder().decode(R.self, from: data)
+}
+```
+
+**In ViewModel:**
+```swift
+class UserViewModel: ObservableObject {
+    @Published var users: [User] = []
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    
+    private let service = NetworkService()
+    
+    @MainActor
+    func loadUsers() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            users = try await service.fetchData(
+                from: URL(string: "https://api.example.com/users")!
+            )
+        } catch {
+            errorMessage = "Failed to load users: \(error.localizedDescription)"
+        }
+        
+        isLoading = false
+    }
+}
+```
+
+### Error Handling
+
+```swift
+enum NetworkError: Error, LocalizedError {
+    case invalidURL
+    case noInternetConnection
+    case serverError
+    case decodingError
+    case unauthorized
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return "Invalid URL"
+        case .noInternetConnection:
+            return "No internet connection"
+        case .serverError:
+            return "Server error occurred"
+        case .decodingError:
+            return "Failed to parse response"
+        case .unauthorized:
+            return "Unauthorized access"
+        }
+    }
+}
+```
+
+* **FORBIDDEN:**
+  * Do NOT use third-party networking libraries unless absolutely necessary
+  * Do NOT make synchronous network calls
+  * Do NOT ignore error responses
+
+## 6. Data Persistence
+
+### UserDefaults (Simple Data)
+
+```swift
+extension UserDefaults {
+    private enum Keys {
+        static let isFirstLaunch = "isFirstLaunch"
+        static let userName = "userName"
+    }
+    
+    var isFirstLaunch: Bool {
+        get { bool(forKey: Keys.isFirstLaunch) }
+        set { set(newValue, forKey: Keys.isFirstLaunch) }
+    }
+    
+    var userName: String? {
+        get { string(forKey: Keys.userName) }
+        set { set(newValue, forKey: Keys.userName) }
+    }
+}
+```
+
+### Keychain (Secure Data)
+
+```swift
+import Security
+
+class KeychainService {
+    func save(_ data: Data, forKey key: String) throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: key,
+            kSecValueData as String: data
+        ]
+        
+        SecItemDelete(query as CFDictionary)
+        let status = SecItemAdd(query as CFDictionary, nil)
+        
+        guard status == errSecSuccess else {
+            throw KeychainError.saveFailed
+        }
+    }
+    
+    func retrieve(forKey key: String) throws -> Data {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: key,
+            kSecReturnData as String: true
+        ]
+        
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        
+        guard status == errSecSuccess,
+              let data = result as? Data else {
+            throw KeychainError.retrieveFailed
+        }
+        
+        return data
+    }
+}
+```
+
+### CoreData (Relational Data - When Needed)
+
+* Use for complex data relationships
+* Create data model in Xcode (.xcdatamodeld)
+* Generate NSManagedObject subclasses
+* Access via persistent container
+
+```swift
+class DataController: ObservableObject {
+    let container = NSPersistentContainer(name: "FinChronicle")
+    
+    init() {
+        container.loadPersistentStores { description, error in
+            if let error = error {
+                print("Core Data failed to load: \(error.localizedDescription)")
+            }
+        }
+    }
+}
+```
+
+* **FORBIDDEN:**
+  * Do NOT store sensitive data in UserDefaults
+  * Do NOT use CoreData for simple key-value storage
+  * Do NOT forget to handle migration when changing data models
+
+## 7. Testing
+
+### Unit Tests (XCTest)
+
+```swift
+import XCTest
+@testable import FinChronicle
+
+final class CodeBreakerTests: XCTestCase {
+    var game: CodeBreaker!
+    
+    override func setUp() {
+        super.setUp()
+        game = CodeBreaker(pegChoices: [.red, .blue, .green, .yellow])
+    }
+    
+    override func tearDown() {
+        game = nil
+        super.tearDown()
+    }
+    
+    func testInitialState() {
+        XCTAssertEqual(game.attempts.count, 0)
+        XCTAssertEqual(game.guess.pegs.count, 4)
+    }
+    
+    func testAttemptGuess() {
+        let initialCount = game.attempts.count
+        game.attemptGuess()
+        XCTAssertEqual(game.attempts.count, initialCount + 1)
+    }
+    
+    func testPerfectMatch() {
+        game.guess.pegs = game.masterCode.pegs
+        let match = game.guess.match(against: game.masterCode)
+        XCTAssertEqual(match.perfect, 4)
+        XCTAssertEqual(match.partial, 0)
+    }
+}
+```
+
+### UI Tests (XCUITest)
+
+```swift
+import XCUITest
+
+final class CodeBreakerUITests: XCTestCase {
+    let app = XCUIApplication()
+    
+    override func setUp() {
+        super.setUp()
+        continueAfterFailure = false
+        app.launch()
+    }
+    
+    func testGameLaunch() {
+        XCTAssertTrue(app.staticTexts["Code Breaker"].exists)
+    }
+    
+    func testSubmitButton() {
+        let submitButton = app.buttons["Submit Guess"]
+        XCTAssertTrue(submitButton.exists)
+        submitButton.tap()
+        
+        // Verify attempt was added
+        XCTAssertTrue(app.staticTexts["Attempt 1"].exists)
+    }
+}
+```
+
+**Running Tests:**
+* Unit tests: ⌘ + U
+* Single test: Click diamond next to test method
+* Test coverage: Enable in scheme > Test > Options > Code Coverage
+
+* **FORBIDDEN:**
+  * Do NOT skip tests for critical functionality
+  * Do NOT write tests that depend on external services (mock them)
+  * Do NOT commit failing tests
+
+## 8. Dependency Management
+
+### Swift Package Manager (SPM)
+
+**Adding a Package:**
+1. File > Add Package Dependencies...
+2. Enter package URL (e.g., `https://github.com/...`)
+3. Select version/branch
+4. Add to target
+
+**Common Packages:**
+```swift
+// Example: Alamofire (if networking beyond URLSession is needed)
+dependencies: [
+    .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.8.0")
+]
+```
+
+**In Code:**
+```swift
+import Alamofire  // If added
+```
+
+### Before Adding Dependencies
+
+**MUST follow this process:**
+
+1. **Evaluate Need:**
+   * Can this be done with native iOS frameworks?
+   * Is this dependency actively maintained?
+   * What's the package size?
+
+2. **Research Alternatives:**
+   * Compare at least 2-3 options
+   * Check GitHub stars, issues, last update
+   * Review documentation quality
+
+3. **Ask User for Approval:**
+   > "To implement [Feature], I found these Swift packages:
+   > 1. **Package A:** [Pros/Cons]
+   > 2. **Package B:** [Pros/Cons]
+   >
+   > I recommend **Package A** because [Reason].
+   > Shall I proceed with adding it?"
+
+* **FORBIDDEN:**
+  * Do NOT add packages without user approval
+  * Do NOT use unmaintained or abandoned packages
+  * Do NOT add packages for trivial functionality
+
+## 9. Build & Deployment
+
+### Development Build
+
+**Run in Simulator:**
+1. Select simulator: iPhone 15 / iPad Air, etc.
+2. Press ⌘ + R (or Product > Run)
+
+**Run on Device:**
+1. Connect iPhone/iPad
+2. Select device from target dropdown
+3. Sign in Xcode: Settings > Accounts > Add Apple ID
+4. Select team in project settings > Signing & Capabilities
+5. Press ⌘ + R
+
+### Production Build
+
+**Archive for App Store:**
+1. Select "Any iOS Device" as target
+2. Product > Archive
+3. Wait for archive to complete
+4. Organizer opens automatically
+5. Click "Distribute App"
+6. Select App Store Connect
+7. Follow upload wizard
+
+**TestFlight Beta:**
+1. Upload build to App Store Connect
+2. Provide export compliance info
+3. Add to TestFlight
+4. Invite testers via email
+
+**Build Configuration:**
+* Debug: Development builds with debug symbols
+* Release: Optimized builds for distribution
+
+* **FORBIDDEN:**
+  * Do NOT distribute debug builds to users
+  * Do NOT commit provisioning profiles
+  * Do NOT share signing certificates publicly
+
+## 10. Git Workflow & Best Practices
 
 ### Branch Strategy
 
 * **Main Branches:**
-  * `master` - Production-ready code
-  * `releases/R[version]` - Release branches (e.g., `releases/R26B`)
+  * `main` - Production-ready code
+  * `develop` - Development branch (optional)
+
 * **Feature Branches:**
   * Format: `feature/[ticket-id]-short-description`
-  * Example: `feature/ONERSA-12345-add-biometric-login`
+  * Example: `feature/FC-123-add-financial-tracking`
+
 * **Bugfix Branches:**
   * Format: `bugfix/[ticket-id]-short-description`
-  * Example: `bugfix/UATRSA-67890-fix-crash-on-logout`
+  * Example: `bugfix/FC-456-fix-peg-color-selection`
 
 ### Commit Messages
 
-* **Format:** `[TICKET-ID] Brief description`
-* **Examples:**
-  * `[ONERSA-12345] Add biometric authentication support`
-  * `[UATRSA-67890] Fix crash on logout when offline`
-* **Good Commit:** Clear, concise, explains "what" and "why"
-* **Bad Commit:** `fix bug`, `update code`, `wip`
+**Format:** `[TICKET-ID] Brief description`
+
+**Examples:**
+* `[FC-123] Add financial transaction model`
+* `[FC-456] Fix color picker crash on iPad`
+* `[FC-789] Improve CodeBreaker performance`
+
+**Good Commit:** Clear, concise, explains "what" and "why"  
+**Bad Commit:** `fix bug`, `update code`, `wip`
 
 ### Pull Request Process
 
-1. Create feature/bugfix branch from `master` or release branch
+1. Create feature/bugfix branch from `main`
 2. Make changes following coding guidelines
 3. Write/update tests
-4. Run `npm run lint` to check code quality
-5. Run `npm run test` to ensure tests pass
-6. Create PR with template (PULL_REQUEST_TEMPLATE.md)
-7. Request reviews from team members
-8. Address review comments
-9. Merge after approval
+4. Run tests (⌘ + U) to ensure they pass
+5. Create PR with clear description
+6. Request code review
+7. Address review comments
+8. Merge after approval
 
-**FORBIDDEN:**
-* Do NOT merge without review
-* Do NOT commit directly to `master` or release branches
-* Do NOT merge with failing tests
+* **FORBIDDEN:**
+  * Do NOT commit directly to `main`
+  * Do NOT merge without testing
+  * Do NOT commit sensitive data or keys
 
-## 9. Common Pitfalls & Best Practices
+## 11. Common Pitfalls & Best Practices
 
 ### Pitfalls to Avoid
 
-1. **AsyncStorage for Tokens:** Use `react-native-sensitive-info` for secure storage
-2. **Blocking UI Thread:** Use async operations and loading indicators
-3. **Memory Leaks:** Clean up listeners, timers, subscriptions in unmount
-4. **Hardcoded Strings:** Use i18n translations
-5. **Large Bundle Size:** Use dynamic imports for large features
-6. **Unhandled Promise Rejections:** Always catch errors in async code
-7. **Direct State Mutation:** Always return new state objects in reducers
-8. **Inline Styles:** Use StyleSheet.create for performance
-9. **Missing Permissions:** Request permissions before accessing device features
-10. **Network Errors:** Handle offline state gracefully
+1. **Force Unwrapping:** Always use optional binding or nil coalescing
+2. **Retain Cycles:** Use `[weak self]` in closures that capture `self`
+3. **UI on Background Thread:** Always update UI on main thread (`@MainActor`)
+4. **Massive Views:** Break down into smaller components
+5. **Business Logic in Views:** Move to ViewModels
+6. **Hardcoded Strings:** Use localization for user-facing text
+7. **Missing Error Handling:** Always handle errors gracefully
+8. **No Tests:** Write tests for critical functionality
+9. **Ignoring Warnings:** Fix Xcode warnings before committing
+10. **Memory Leaks:** Profile with Instruments to detect leaks
 
 ### Best Practices
 
-1. **Always Use Hooks:** Prefer functional components with hooks over class components
-2. **TypeScript:** Use TypeScript for new code with proper type definitions
-3. **Code Review:** Review your own code before submitting PR
-4. **Testing:** Write tests for critical paths (auth, payments, data mutations)
-5. **Error Handling:** Show user-friendly error messages, log technical details
-6. **Performance:** Profile with React DevTools, optimize re-renders
-7. **Accessibility:** Add accessibility labels for screen readers
-8. **Security:** Never log sensitive data (tokens, passwords, PII)
-9. **Documentation:** Document complex logic with comments
-10. **Consistency:** Follow existing patterns and conventions in the codebase
+1. **SwiftUI Previews:** Use `#Preview` for rapid UI iteration
+2. **Accessibility:** Add `.accessibilityLabel()` to interactive elements
+3. **Dark Mode:** Test both light and dark appearances
+4. **Different Devices:** Test on iPhone and iPad (when applicable)
+5. **Performance:** Use `LazyVStack`/`LazyHStack` for long lists
+6. **Reusability:** Create reusable components in `Utilities/`
+7. **Type Safety:** Leverage Swift's strong type system
+8. **Documentation:** Add documentation comments for public APIs
+9. **Code Review:** Review your own code before submitting PR
+10. **Consistency:** Follow Swift API Design Guidelines
 
-## 10. Key Files & Entry Points
+## 12. Key Files & Resources
 
 ### Critical Files
 
-* **Entry Point:** `index.js` - App registration
-* **Root Component:** `App.tsx` - App initialization with Redux provider
-* **Navigation:** `src/appNavigator.tsx` - Navigation configuration
-* **Constants:** `src/appConstants.ts` - Application-wide constants (~730 lines)
-* **Redux Store:** `src/store/configureStore.js` - Redux setup
-* **Root Reducer:** `src/reducers/index.ts` - Combines all reducers
-* **Root Saga:** `src/saga/index.ts` - Combines all sagas
-* **Interceptor:** `src/services/interceptorService.ts` - HTTP interceptor
+* **App Entry:** `FinChronicleApp.swift` - App lifecycle and scene configuration
+* **Info.plist:** App configuration, permissions, capabilities
+* **.gitignore:** Git ignore patterns (already created)
+* **README.md:** Project documentation (already created)
 
 ### Configuration Files
 
-* **Package:** `package.json` - Dependencies & scripts
-* **TypeScript:** `tsconfig.json` - TypeScript configuration
-* **Babel:** `babel.config.js` - Babel presets & plugins
-* **Metro:** `metro.config.js` - Metro bundler configuration
-* **Jest:** `jest.config.js` - Test configuration
-* **ESLint:** `.eslintrc.json` - Linting rules
-* **Prettier:** `.prettierrc` - Code formatting
+* **Xcode Project:** `FinChronicle.xcodeproj/project.pbxproj`
+* **Swift Lint:** `.swiftlint.yml` - Code quality rules (already created)
 
-### Android
+### Apple Documentation
 
-* **Build:** `android/app/build.gradle` - Build configuration, product flavors
-* **Manifest:** `android/app/src/main/AndroidManifest.xml` - App manifest
-* **Main Activity:** `android/app/src/main/java/.../MainActivity.java`
+* **SwiftUI:** https://developer.apple.com/documentation/swiftui/
+* **Swift Language:** https://docs.swift.org/swift-book/
+* **Human Interface Guidelines:** https://developer.apple.com/design/human-interface-guidelines/
+* **Xcode:** https://developer.apple.com/xcode/
 
-### iOS
+### Learning Resources
 
-* **Workspace:** `ios/gbmfDriverApp.xcworkspace` - Xcode workspace
-* **Podfile:** `ios/Podfile` - CocoaPods dependencies
-* **Info.plist:** `ios/gbmfDriverApp/Info.plist` - App configuration
-
-## 11. Support & Resources
-
-### Documentation
-
-* **README:** `/README.md` - Setup & build instructions
-* **Release Notes:** `/RELEASE-NOTES.md` - Version history
-* **PR Template:** `/PULL_REQUEST_TEMPLATE.md` - PR guidelines
-
-### Internal Links
-
-* **Vault:** Credentials & secrets storage
-* **Jenkins:** CI/CD pipelines
-* **Code Push Server:** OTA updates management
-* **Confluence:** Project documentation
-* **GitHub:** Source code repository
-
-### External Resources
-
-* **React Native Docs:** https://reactnative.dev/docs/getting-started
-* **React Navigation:** https://reactnavigation.org/docs/getting-started
-* **Redux:** https://redux.js.org/introduction/getting-started
-* **Redux-Saga:** https://redux-saga.js.org/docs/introduction/GettingStarted
-* **TypeScript:** https://www.typescriptlang.org/docs/
+* **SwiftUI Tutorials:** https://developer.apple.com/tutorials/swiftui
+* **Swift Playgrounds:** Interactive learning
+* **WWDC Videos:** https://developer.apple.com/videos/
+* **Hacking with Swift:** https://www.hackingwithswift.com/
 
 ---
 
 ## Summary
 
-This AGENTS.md document provides comprehensive guidelines for developing the Hexalite Integrated App. Key principles:
+This AGENTS.md provides comprehensive guidelines for developing FinChronicle iOS app. Key principles:
 
-1. **Feature-Based Architecture:** Self-contained modules with clear boundaries
-2. **Redux + Saga:** Centralized state management with side effects handling
-3. **Type Safety:** TypeScript for new code with proper type definitions
-4. **Offline-First:** Cache API responses, queue failed requests
-5. **Security:** Secure storage for tokens, MFA support, no sensitive data logging
-6. **Testing:** Unit tests for critical paths, integration tests for workflows
-7. **Code Quality:** ESLint, Prettier, consistent code style
-8. **Performance:** MMKV storage, request deduplication, optimized rendering
-9. **Dependency Management:** Approval required before adding new dependencies
-10. **Documentation:** Clear comments, JIRA tickets, PR descriptions
+1. **MVVM Architecture:** Clean separation of concerns with ViewModels
+2. **SwiftUI:** Declarative UI with modern Swift syntax
+3. **Type Safety:** Leverage Swift's strong type system
+4. **State Management:** Use appropriate property wrappers (@State, @StateObject, etc.)
+5. **Async/Await:** Modern concurrency for network calls
+6. **Testing:** XCTest for unit tests, XCUITest for UI tests
+7. **Code Quality:** Follow Swift naming conventions and best practices
+8. **Security:** Use Keychain for sensitive data
+9. **Performance:** Optimize rendering, use lazy loading for lists
+10. **Consistency:** Follow existing patterns in the codebase
 
-**When in doubt, follow existing patterns in the codebase. Consistency is key.**
+**When in doubt, follow Apple's Swift API Design Guidelines and existing patterns in the codebase. Consistency and clarity are paramount.**
