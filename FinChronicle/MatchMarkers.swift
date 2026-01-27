@@ -26,8 +26,8 @@ enum Match {
             }
         }
         func matchMarker(peg:Int)-> some View {
-            let exactCount: Int = matches.count(where: { match in match == .exact })
-            let foundCount: Int = matches.count(where: { match in match != .nomatch })
+            let exactCount: Int = matches.count{$0 == .exact } 
+            let foundCount: Int = matches.count{ $0 != .nomatch }
             return Circle()
                 .fill(exactCount > peg ? Color.primary: Color.clear)
                 .strokeBorder(foundCount > peg ? Color.primary: Color.clear)
