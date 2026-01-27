@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    let game: CodeBreaker = CodeBreaker()
+    
     var body: some View {
         
         VStack {
