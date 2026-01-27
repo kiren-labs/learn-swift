@@ -14,11 +14,23 @@ struct CodeBreaker {
     var guess: Code = Code(kind: .guess)
     var attempt: [Code] = []
     let pegChoices: [Peg] = [.red, .blue, .yellow, .green]
+    mutating func changeGuessPeg(at index:Int) {
+        let existingPeg = guess.pegs[index]
+        if let indexOfExistingPegChoices = pegChoices.firstIndex(of: existingPeg) {
+            let newPeg = pegChoices[(indexOfExistingPegChoices + 1) % pegChoices.count]
+            guess.pegs[index] = newPeg
+            
+        } else {
+            guess.pegs[index] = pegChoices.first ?? Code.missing
+        }
+        
+    }
 }
 
 struct Code {
     var kind: Kind
     var pegs: [Peg] = [.green, .red, .blue, .yellow]
+    static var missing: Peg = .clear
     
     enum Kind {
         case master
