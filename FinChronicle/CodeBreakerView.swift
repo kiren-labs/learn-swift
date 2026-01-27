@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CodeBreakerView: View {
-    @State var game: CodeBreaker = CodeBreaker()
+    @State var game: CodeBreaker = CodeBreaker(pegChoices: [.blue, .green, .yellow, .orange])
     
     var body: some View {
         
@@ -43,6 +43,14 @@ struct CodeBreakerView: View {
                 index in
 //                Circle().foregroundStyle(colors[index])
                 RoundedRectangle(cornerRadius: 10)
+                    .overlay {
+                        if code.pegs[index] == Code.missing {
+                            RoundedRectangle(cornerRadius: 10)
+                            .strokeBorder(Color.gray)
+                
+                        }
+                    }
+                    .contentShape(Rectangle())
                     .aspectRatio(1, contentMode: .fit)
                     .foregroundStyle(code.pegs[index])
                     .onTapGesture {
