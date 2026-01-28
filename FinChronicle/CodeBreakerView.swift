@@ -20,11 +20,7 @@ struct CodeBreakerView: View {
                     view(for: game.attempts[index])
                 }
             }
-           
-             
         }.padding()
-            
-      
     }
     var guessButton: some View {
         Button("Guess") {
@@ -59,10 +55,16 @@ struct CodeBreakerView: View {
                         }
                     }
             }
-            MatchMarkers(matches: code.matches)
+            Rectangle()
+                .foregroundStyle(Color.clear).aspectRatio(1,contentMode: .fit)
                 .overlay {
-                    if code.kind == .guess {
-                        guessButton
+                    if let matches = code.matches {
+                        MatchMarkers(matches: matches)
+                    } else {
+                        if code.kind == .guess {
+                            guessButton
+                            
+                        }
                     }
                 }
         }

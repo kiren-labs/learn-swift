@@ -56,11 +56,11 @@ struct Code {
             pegs[index] = pegChoices.randomElement() ?? Code.missing
         }
     }
-    var matches: [Match] {
+    var matches: [Match]? {
         switch kind {
         case .attempt(let matches):
             return matches
-        default: return []
+        default: return nil
         }
     }
     
