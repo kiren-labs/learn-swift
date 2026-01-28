@@ -40,7 +40,7 @@ struct CodeBreakerView: View {
 //                Circle().foregroundStyle(colors[index])
                 RoundedRectangle(cornerRadius: 10)
                     .overlay {
-                        if code.pegs[index] == Code.missing {
+                        if code.pegs[index] == Code.missingPeg {
                             RoundedRectangle(cornerRadius: 10)
                             .strokeBorder(Color.gray)
                 
