@@ -6,9 +6,10 @@
 //
 import SwiftUI
 
-
+/// Represents the type of match between pegs.
 typealias Peg = Color
 
+/// Represents the result of comparing two pegs.
 struct CodeBreaker {
     var masterCode: Code = Code(kind: .master)
     var guess: Code = Code(kind: .guess)
@@ -40,6 +41,7 @@ struct CodeBreaker {
     }
 }
 
+/// Represents a code consisting of pegs and its type (master, guess, attempt).
 struct Code {
     var kind: Kind
     var pegs: [Peg] = Array(repeating: Code.missing, count: 4)
@@ -64,24 +66,29 @@ struct Code {
         }
     }
     
+    /// Returns an array of Matches when comparing this code against another code
+    /// Compares or evaluates another code against the current instance.
+    /// - Parameter otherCode: The code to compare or validate against this instance.
+
     func match(against otherCode: Code) -> [Match] {
-        var results: [Match] = Array(repeating: .nomatch, count: pegs.count)
         var pegsToMatch: [Peg] = otherCode.pegs
-        for index in  pegs.indices {
+        var backwordExactMatches = pegs.indices.reversed().map { index in
             if pegsToMatch.count > index, pegsToMatch[index] == pegs[index] {
-                results[index] = .exact
                 pegsToMatch.remove(at: index)
+                return Match.exact
+            } else {
+                return .nomatch
             }
         }
-        for index in pegs.indices {
-            if results[index] != .exact {
-                if let matchIndex = pegsToMatch.firstIndex(of: pegs[index]) {
-                    results[index] = .inexact
-                    pegsToMatch.remove(at: matchIndex)
-                    }
-                }
+        let exactMatches = Array(backwordExactMatches.reversed())
+        return pegs.indices.map { index in
+            if exactMatches[index] != .exact, let matchIndex = pegsToMatch.firstIndex(of: pegs[index]) {
+                pegsToMatch.remove(at: matchIndex)
+                return .inexact
+            } else {
+                return exactMatches[index]
             }
-        return results
+        }
     }
 }
 
