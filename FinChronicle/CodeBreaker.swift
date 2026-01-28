@@ -41,11 +41,15 @@ struct CodeBreaker {
     }
 }
 
+extension Color {
+    static let missing = Color.clear
+}
+
 /// Represents a code consisting of pegs and its type (master, guess, attempt).
 struct Code {
     var kind: Kind
     var pegs: [Peg] = Array(repeating: Code.missingPeg, count: 4)
-    static let missingPeg: Peg = .clear
+    static let missingPeg: Peg = Color.missing
     
     enum Kind: Equatable {
         case master
