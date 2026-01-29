@@ -38,17 +38,7 @@ struct CodeBreakerView: View {
             ForEach(code.pegs.indices, id: \.self) {
                 index in
 //                Circle().foregroundStyle(colors[index])
-                RoundedRectangle(cornerRadius: 10)
-                    .overlay {
-                        if code.pegs[index] == Code.missingPeg {
-                            RoundedRectangle(cornerRadius: 10)
-                            .strokeBorder(Color.gray)
-                
-                        }
-                    }
-                    .contentShape(Rectangle())
-                    .aspectRatio(1, contentMode: .fit)
-                    .foregroundStyle(code.pegs[index])
+                PegsView(peg: code.pegs[index])
                     .onTapGesture {
                         if code.kind == .guess {
                             game.changeGuessPeg(at: index)
