@@ -86,6 +86,11 @@ struct CodeBreakerView: View {
         }
     }
 
+    
+    struct Selection {
+        static let border: CGFloat = 5
+        static let cornerRadius: CGFloat = 10
+    }
 }
 
 
