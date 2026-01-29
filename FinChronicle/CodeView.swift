@@ -2,7 +2,7 @@
 //  CodeView.swift
 //  FinChronicle
 //
-//  Created by Paul, Kiren (Allianz Technology) on 29/1/26.
+//  Created by Paul, Kiren  on 29/1/26.
 //
 
 import SwiftUI
@@ -11,8 +11,8 @@ struct CodeView: View {
     //Mark: Data in
     let code: Code
     
-    // MARK: Data owned by Me
-    @State private var selection: Int = 0
+    // MARK: Data shared with Me
+    @Binding var selection: Int
     //MARK: Body
     var body: some View {
         ForEach(code.pegs.indices, id: \.self) {

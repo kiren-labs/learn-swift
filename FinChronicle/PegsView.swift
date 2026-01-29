@@ -2,7 +2,7 @@
 //  PegsView.swift
 //  FinChronicle
 //
-//  Created by Paul, Kiren (Allianz Technology) on 29/1/26.
+//  Created by Paul, Kiren  on 29/1/26.
 //
 import SwiftUI
 

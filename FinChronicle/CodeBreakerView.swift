@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  FinChronicle
 //
-//  Created by Paul, Kiren (Allianz Technology) on 25/1/26.
+//  Created by Paul, Kiren  on 25/1/26.
 //
 
 import SwiftUI
@@ -53,7 +53,7 @@ struct CodeBreakerView: View {
     func view(for code : Code) -> some View {
         
         HStack {
-            CodeView(code: code)
+            CodeView(code: code, selection: $selection)
             Color.clear.aspectRatio(1,contentMode: .fit)
                 .overlay {
                     if let matches = code.matches {

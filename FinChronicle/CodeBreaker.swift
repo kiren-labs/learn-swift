@@ -2,7 +2,7 @@
 //  CodeBreaker.swift
 //  FinChronicle
 //
-//  Created by Paul, Kiren (Allianz Technology) on 27/1/26.
+//  Created by Paul, Kiren  on 27/1/26.
 //
 import SwiftUI
 
