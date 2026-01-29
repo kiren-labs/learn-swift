@@ -12,7 +12,7 @@ enum Match {
     case inexact
 }
     struct MatchMarkers: View {
-        var matches : [Match]
+        let matches : [Match]
         var body: some View {
             HStack {
                 VStack {

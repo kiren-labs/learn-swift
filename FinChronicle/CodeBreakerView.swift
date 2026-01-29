@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct CodeBreakerView: View {
+    
+    //MARK
     @State var game: CodeBreaker = CodeBreaker(pegChoices: [.blue, .green, .yellow, .orange])
     
     var body: some View {
