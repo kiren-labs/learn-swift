@@ -1,3 +1,11 @@
+//
+//  Code.swift
+//  FinChronicle
+//
+//  Created by Paul, Kiren (Allianz Technology) on 29/1/26.
+//
+
+
 import SwiftUI
 
 /// Represents a code consisting of pegs and its type (master, guess, attempt).
