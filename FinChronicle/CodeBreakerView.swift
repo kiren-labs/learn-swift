@@ -69,8 +69,7 @@ struct CodeBreakerView: View {
                         }
                     }
             }
-            Rectangle()
-                .foregroundStyle(Color.clear).aspectRatio(1,contentMode: .fit)
+            Color.clear.aspectRatio(1,contentMode: .fit)
                 .overlay {
                     if let matches = code.matches {
                         MatchMarkers(matches: matches)
