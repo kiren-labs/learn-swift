@@ -35,7 +35,7 @@ struct CodeBreakerView: View {
                 } label: {
                     PegsView(peg:peg)
                 }
-                 
+                
             }
         }
     }
@@ -45,28 +45,25 @@ struct CodeBreakerView: View {
                 game.attemptGuess()
             }
         }
-        .font(.system(size: 80))
-        .minimumScaleFactor(0.1)
+        .font(.system(size: GuessButton.maximunfontSize))
+        .minimumScaleFactor(GuessButton.scalefactor)
     }
-     
+    
     func view(for code : Code) -> some View {
-
+        
         HStack {
             ForEach(code.pegs.indices, id: \.self) {
                 index in
-//                Circle().foregroundStyle(colors[index])
-                
                 PegsView(peg: code.pegs[index])
-                    .padding(5)
+                    .padding(Selection.border)
                     .background{
                         if selection == index, code.kind == .guess {
-                            RoundedRectangle(cornerRadius: 10)
-                                .foregroundStyle(Color.gray(0.8))
+                            Selection.shape
+                                .foregroundStyle(Selection.color)
                         }
                     }
                     .onTapGesture {
                         if code.kind == .guess {
-//                            game.changeGuessPeg(at: index)
                             selection = index
                         }
                     }
@@ -85,11 +82,18 @@ struct CodeBreakerView: View {
                 }
         }
     }
-
     
+    struct GuessButton {
+        static let minimunFontSize: CGFloat = 8
+        static let maximunfontSize: CGFloat = 80
+        static let scalefactor = minimunFontSize / maximunfontSize
+    }
     struct Selection {
         static let border: CGFloat = 5
         static let cornerRadius: CGFloat = 10
+        static let color: Color = Color.gray(8.85)
+        static let shape = RoundedRectangle(cornerRadius: cornerRadius)
+        
     }
 }
 
