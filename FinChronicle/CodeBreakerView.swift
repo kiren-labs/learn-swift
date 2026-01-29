@@ -32,6 +32,7 @@ struct CodeBreakerView: View {
             ForEach(game.pegChoices, id: \.self) {peg in
                 Button{
                     game.setGuessPeg(peg, at: selection)
+                    selection = (selection +  1) % game.masterCode.pegs.count
                 } label: {
                     PegsView(peg:peg)
                 }
@@ -91,7 +92,7 @@ struct CodeBreakerView: View {
     struct Selection {
         static let border: CGFloat = 5
         static let cornerRadius: CGFloat = 10
-        static let color: Color = Color.gray(8.85)
+        static let color: Color = Color.gray(0.85)
         static let shape = RoundedRectangle(cornerRadius: cornerRadius)
         
     }

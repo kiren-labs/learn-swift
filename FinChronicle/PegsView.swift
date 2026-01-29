@@ -13,7 +13,8 @@ struct PegsView: View {
     // MARK: - Body
     var body: some View {
         
-        let pegShape = RoundedRectangle(cornerRadius: 10)
+        let pegShape = Circle()
+        // RoundedRectangle(cornerRadius: 10)
         pegShape
             .overlay {
                 if peg == Code.missingPeg {

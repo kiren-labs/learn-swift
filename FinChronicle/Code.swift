@@ -21,7 +21,7 @@ struct Code {
         case unkown
     }
     mutating func randomize(from pegChoices: [Peg]) {
-        for index in pegChoices.indices {
+        for index in pegs.indices {
             pegs[index] = pegChoices.randomElement() ?? Code.missingPeg
         }
     }
