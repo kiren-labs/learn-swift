@@ -55,11 +55,13 @@ struct CodeBreakerView: View {
             ForEach(code.pegs.indices, id: \.self) {
                 index in
 //                Circle().foregroundStyle(colors[index])
+                
                 PegsView(peg: code.pegs[index])
+                    .padding(5)
                     .background{
                         if selection == index, code.kind == .guess {
                             RoundedRectangle(cornerRadius: 10)
-                                .foregroundStyle(Color.gray)
+                                .foregroundStyle(Color.gray(0.8))
                         }
                     }
                     .onTapGesture {
@@ -86,6 +88,12 @@ struct CodeBreakerView: View {
 
 }
 
+
+extension Color {
+    static func gray(_ brightness: CGFloat) -> Color {
+        return Color(hue: 140/360, saturation: 0, brightness: brightness)
+    }
+}
 #Preview {
     CodeBreakerView()
 }
