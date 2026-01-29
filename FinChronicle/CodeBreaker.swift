@@ -21,11 +21,11 @@ struct CodeBreaker {
         masterCode.randomize(from: pegChoices)
         print(masterCode)
     }
-    
-   mutating func attemptGuess() {
+    mutating func attemptGuess() {
         var attempt =  guess
-       attempt.kind = .attempt(guess.match(against: masterCode))
+        attempt.kind = .attempt(guess.match(against: masterCode))
         attempts.append(attempt)
+        guess.reset()
     }
     
     mutating func changeGuessPeg(at index:Int) {
