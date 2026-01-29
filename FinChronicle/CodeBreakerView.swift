@@ -56,6 +56,12 @@ struct CodeBreakerView: View {
                 index in
 //                Circle().foregroundStyle(colors[index])
                 PegsView(peg: code.pegs[index])
+                    .background{
+                        if selection == index, code.kind == .guess {
+                            RoundedRectangle(cornerRadius: 10)
+                                .foregroundStyle(Color.gray)
+                        }
+                    }
                     .onTapGesture {
                         if code.kind == .guess {
 //                            game.changeGuessPeg(at: index)
