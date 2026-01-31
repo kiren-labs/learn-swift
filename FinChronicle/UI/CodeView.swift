@@ -16,7 +16,7 @@ struct CodeView<AncillaryView>:View where AncillaryView: View {
     
     @ViewBuilder let ancillaryView: () -> AncillaryView
     
-    init(code: Code, selection: Binding<Int>, ancillaryView: @escaping () -> View) {
+    init(code: Code, selection: Binding<Int>, ancillaryView: @escaping () -> AncillaryView) {
         self.code = code
         self._selection = selection
         self.ancillaryView = ancillaryView
