@@ -15,25 +15,41 @@ struct CodeView: View {
     @Binding var selection: Int
     //MARK: Body
     var body: some View {
-        ForEach(code.pegs.indices, id: \.self) {
-            index in
-            PegsView(peg: code.pegs[index])
-                .padding(Selection.border)
-                .background{
-                    if selection == index, code.kind == .guess {
-                        Selection.shape
-                            .foregroundStyle(Selection.color)
+        
+        HStack {
+            ForEach(code.pegs.indices, id: \.self) {
+                index in
+                PegsView(peg: code.pegs[index])
+                    .padding(Selection.border)
+                    .background{
+                        if selection == index, code.kind == .guess {
+                            Selection.shape
+                                .foregroundStyle(Selection.color)
+                        }
                     }
-                }
-                .overlay {
-                    Selection.shape.foregroundStyle(code.isHidden ? Color.gray : .clear)
-                }
-                .onTapGesture {
-                    if code.kind == .guess {
-                        selection = index
+                    .overlay {
+                        Selection.shape.foregroundStyle(code.isHidden ? Color.gray : .clear)
                     }
-                }
+                    .onTapGesture {
+                        if code.kind == .guess {
+                            selection = index
+                        }
+                    }
+            }
+            Color.clear.aspectRatio(1,contentMode: .fit)
+//                .overlay {
+//                    if let matches = code.matches {
+//                        MatchMarkers(matches: matches)
+//                    } else {
+//                        if code.kind == .guess {
+//                            guessButton
+//                            
+//                        }
+//                    }
+//                }
         }
+        
+
     }
     
     struct Selection {
