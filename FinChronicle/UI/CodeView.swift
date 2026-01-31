@@ -14,7 +14,13 @@ struct CodeView<AncillaryView>:View where AncillaryView: View {
     // MARK: Data shared with Me
     @Binding var selection: Int
     
-   @ViewBuilder let ancillaryView: () -> AncillaryView
+    @ViewBuilder let ancillaryView: () -> AncillaryView
+    
+    init(code: Code, selection: Binding<Int>, ancillaryView: @escaping () -> View) {
+        self.code = code
+        self._selection = selection
+        self.ancillaryView = ancillaryView
+    }
     
     
     //MARK: Body
