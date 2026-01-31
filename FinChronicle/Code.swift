@@ -15,7 +15,7 @@ struct Code {
     static let missingPeg: Peg = Color.missing
     
     enum Kind: Equatable {
-        case master
+        case master(isHidden:Bool)
         case guess
         case attempt([Match])
         case unkown
@@ -25,6 +25,14 @@ struct Code {
             pegs[index] = pegChoices.randomElement() ?? Code.missingPeg
         }
     }
+    
+    var isHidden: Bool {
+        switch kind {
+        case .master(let isHidden): return isHidden
+            default : return false
+        }
+    }
+    
     mutating func reset() {
         pegs = Array(repeating: Code.missingPeg, count: 4)
     }
@@ -42,7 +50,7 @@ struct Code {
 
     func match(against otherCode: Code) -> [Match] {
         var pegsToMatch: [Peg] = otherCode.pegs
-        var backwordExactMatches = pegs.indices.reversed().map { index in
+        let backwordExactMatches = pegs.indices.reversed().map { index in
             if pegsToMatch.count > index, pegsToMatch[index] == pegs[index] {
                 pegsToMatch.remove(at: index)
                 return Match.exact
