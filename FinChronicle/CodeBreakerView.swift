@@ -2,74 +2,89 @@
 //  ContentView.swift
 //  FinChronicle
 //
-//  Created by Paul, Kiren (Allianz Technology) on 25/1/26.
+//  Created by Paul, Kiren  on 25/1/26.
 //
 
 import SwiftUI
 
 struct CodeBreakerView: View {
-    @State var game: CodeBreaker = CodeBreaker(pegChoices: [.blue, .green, .yellow, .orange])
+    
+    //MARK
+    @State private var game: CodeBreaker = CodeBreaker(pegChoices: [.blue, .green, .yellow, .orange])
+    @State private var selection: Int = 0
     
     var body: some View {
         
         VStack {
             view(for: game.masterCode)
             ScrollView {
-                view(for: game.guess)
+                if !game.isOver {
+                    view(for: game.guess)
+                }
                 ForEach(game.attempts.indices.reversed(), id: \.self) { index in
                     view(for: game.attempts[index])
                 }
             }
-           
-             
+            pegChooser
         }.padding()
-            
-      
+    }
+    
+    var pegChooser: some View {
+        HStack{
+            ForEach(game.pegChoices, id: \.self) {peg in
+                Button{
+                    game.setGuessPeg(peg, at: selection)
+                    selection = (selection +  1) % game.masterCode.pegs.count
+                } label: {
+                    PegsView(peg:peg)
+                }
+                
+            }
+        }
     }
     var guessButton: some View {
         Button("Guess") {
             withAnimation {
                 game.attemptGuess()
+                selection = 0
             }
         }
-        .font(.system(size: 80))
-        .minimumScaleFactor(0.1)
+        .font(.system(size: GuessButton.maximunfontSize))
+        .minimumScaleFactor(GuessButton.scalefactor)
     }
-     
+    
     func view(for code : Code) -> some View {
-
+        
         HStack {
-            ForEach(code.pegs.indices, id: \.self) {
-                index in
-//                Circle().foregroundStyle(colors[index])
-                RoundedRectangle(cornerRadius: 10)
-                    .overlay {
-                        if code.pegs[index] == Code.missing {
-                            RoundedRectangle(cornerRadius: 10)
-                            .strokeBorder(Color.gray)
-                
-                        }
-                    }
-                    .contentShape(Rectangle())
-                    .aspectRatio(1, contentMode: .fit)
-                    .foregroundStyle(code.pegs[index])
-                    .onTapGesture {
-                        if code.kind == .guess {
-                            game.changeGuessPeg(at: index)
-                        }
-                    }
-            }
-            MatchMarkers(matches: code.matches)
+            CodeView(code: code, selection: $selection)
+            Color.clear.aspectRatio(1,contentMode: .fit)
                 .overlay {
-                    if code.kind == .guess {
-                        guessButton
+                    if let matches = code.matches {
+                        MatchMarkers(matches: matches)
+                    } else {
+                        if code.kind == .guess {
+                            guessButton
+                            
+                        }
                     }
                 }
         }
     }
-
+    
+    struct GuessButton {
+        static let minimunFontSize: CGFloat = 8
+        static let maximunfontSize: CGFloat = 80
+        static let scalefactor = minimunFontSize / maximunfontSize
+    }
+  
 }
 
+
+extension Color {
+    static func gray(_ brightness: CGFloat) -> Color {
+        return Color(hue: 140/360, saturation: 0, brightness: brightness)
+    }
+}
 #Preview {
     CodeBreakerView()
 }

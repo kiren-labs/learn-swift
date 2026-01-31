@@ -2,7 +2,7 @@
 //  FinChronicleUITests.swift
 //  FinChronicleUITests
 //
-//  Created by Paul, Kiren (Allianz Technology) on 25/1/26.
+//  Created by Paul, Kiren  on 25/1/26.
 //
 
 import XCTest
