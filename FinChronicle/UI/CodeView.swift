@@ -7,12 +7,16 @@
 
 import SwiftUI
 
-struct CodeView: View {
+struct CodeView<AncillaryView>:View where AncillaryView: View {
     //Mark: Data in
     let code: Code
     
     // MARK: Data shared with Me
     @Binding var selection: Int
+    
+    let ancillaryView: AncillaryView
+    
+    
     //MARK: Body
     var body: some View {
         
@@ -37,30 +41,21 @@ struct CodeView: View {
                     }
             }
             Color.clear.aspectRatio(1,contentMode: .fit)
-//                .overlay {
-//                    if let matches = code.matches {
-//                        MatchMarkers(matches: matches)
-//                    } else {
-//                        if code.kind == .guess {
-//                            guessButton
-//                            
-//                        }
-//                    }
-//                }
+                .overlay {
+                    ancillaryView
+                }
         }
         
 
     }
-    
-    struct Selection {
-        static let border: CGFloat = 5
-        static let cornerRadius: CGFloat = 10
-        static let color: Color = Color.gray(0.85)
-        static let shape = RoundedRectangle(cornerRadius: cornerRadius)
-        
-    }
 }
-
+fileprivate struct Selection {
+    static let border: CGFloat = 5
+    static let cornerRadius: CGFloat = 10
+    static let color: Color = Color.gray(0.85)
+    static let shape = RoundedRectangle(cornerRadius: cornerRadius)
+    
+}
 //#Preview {
 //    CodeView(code: <#T##Code#>)
 //}
