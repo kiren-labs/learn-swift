@@ -16,7 +16,7 @@ struct CodeBreakerView: View {
     var body: some View {
         
         VStack {
-            CodeView(code: game.masterCode, selection: $selection) {
+            CodeView(code: game.masterCode) {
                 Text("0:03").font(.title)
             }
             ScrollView {
@@ -26,7 +26,7 @@ struct CodeBreakerView: View {
                  {guessButton}
                 }
                 ForEach(game.attempts.indices.reversed(), id: \.self) { index in
-                    CodeView(code: game.attempts[index], selection: $selection) {
+                    CodeView(code: game.attempts[index]) {
                         if let matches = game.attempts[index].matches
                         {
                             MatchMarkers(matches: matches)
