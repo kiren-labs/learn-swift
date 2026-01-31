@@ -14,7 +14,7 @@ struct CodeView<AncillaryView>:View where AncillaryView: View {
     // MARK: Data shared with Me
     @Binding var selection: Int
     
-    let ancillaryView: AncillaryView
+   @ViewBuilder let ancillaryView: () -> AncillaryView
     
     
     //MARK: Body
@@ -42,7 +42,7 @@ struct CodeView<AncillaryView>:View where AncillaryView: View {
             }
             Color.clear.aspectRatio(1,contentMode: .fit)
                 .overlay {
-                    ancillaryView
+                    ancillaryView()
                 }
         }
         
