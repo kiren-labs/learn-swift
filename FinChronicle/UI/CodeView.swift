@@ -14,7 +14,12 @@ struct CodeView<AncillaryView>:View where AncillaryView: View {
     // MARK: Data shared with Me
     @Binding var selection: Int
     
+    // MARK: Data (sort of) In Function
     @ViewBuilder let ancillaryView: () -> AncillaryView
+    
+    //MARK: Data owned by me
+    @Namespace private var selectionNamespace
+    
     
     init(
         code: Code,
@@ -39,6 +44,7 @@ struct CodeView<AncillaryView>:View where AncillaryView: View {
                             if selection == index, code.kind == .guess {
                                 Selection.shape
                                     .foregroundStyle(Selection.color)
+                                    .matchedGeometryEffect(id: "selection", in: selectionNamespace)
                             }
                         }.animation(.selection, value: selection)
                     }
