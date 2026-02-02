@@ -34,23 +34,26 @@ struct CodeBreakerView: View {
                     }
                 }
             }
-            pegChooser
+            pegChooser(choices: game.pegChoices) {peg in
+                game.setGuessPeg(peg, at: selection)
+                selection = (selection + 1) % game.masterCode.pegs.count
+            }
         }.padding()
     }
     
-    var pegChooser: some View {
-        HStack{
-            ForEach(game.pegChoices, id: \.self) {peg in
-                Button{
-                    game.setGuessPeg(peg, at: selection)
-                    selection = (selection +  1) % game.masterCode.pegs.count
-                } label: {
-                    PegsView(peg:peg)
-                }
-                
-            }
-        }
-    }
+//    var pegChooser: some View {
+//        HStack{
+//            ForEach(game.pegChoices, id: \.self) {peg in
+//                Button{
+//                    game.setGuessPeg(peg, at: selection)
+//                    selection = (selection +  1) % game.masterCode.pegs.count
+//                } label: {
+//                    PegsView(peg:peg)
+//                }
+//                
+//            }
+//        }
+//    }
     var guessButton: some View {
         Button("Guess") {
             withAnimation {

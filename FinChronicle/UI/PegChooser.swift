@@ -8,11 +8,23 @@
 import SwiftUI
 
 struct PegChooser: View {
+    @Binding var game: CodeBreaker
+    @Binding var selection: Int
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        HStack{
+            ForEach(game.pegChoices, id: \.self) {peg in
+                Button{
+                    game.setGuessPeg(peg, at: selection)
+                    selection = (selection +  1) % game.masterCode.pegs.count
+                } label: {
+                    PegsView(peg:peg)
+                }
+                
+            }
+        }
     }
 }
 
-#Preview {
-    PegChooser()
-}
+//#Preview {
+//    PegChooser()
+//}

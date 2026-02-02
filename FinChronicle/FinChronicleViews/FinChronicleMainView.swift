@@ -9,7 +9,19 @@ import SwiftUI
 
 struct FinChronicleMainView: View {
     var body: some View {
-        HStack {
+        VStack {
+            RoundedRectangle(cornerRadius: 10)
+                .aspectRatio(1, contentMode: .fit)
+                .overlay {
+                    HStack {
+                        Text("FinChronicle")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.green)
+                        
+                    }
+                }
+           
             
         }
     }
