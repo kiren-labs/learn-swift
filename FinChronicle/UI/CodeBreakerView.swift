@@ -41,7 +41,9 @@ struct CodeBreakerView: View {
                     }
                 }
             }
-            PegChooser(choices: game.pegChoices, onChoose: changePegAtSelection)
+            if !game.isOver {
+                PegChooser(choices: game.pegChoices, onChoose: changePegAtSelection)
+            }
         }.padding()
     }
     

@@ -34,14 +34,23 @@ struct CodeView<AncillaryView>:View where AncillaryView: View {
                 index in
                 PegsView(peg: code.pegs[index])
                     .padding(Selection.border)
-                    .background{
+                    .background { // selection background
                         if selection == index, code.kind == .guess {
                             Selection.shape
                                 .foregroundStyle(Selection.color)
                         }
                     }
-                    .overlay {
-                        Selection.shape.foregroundStyle(code.isHidden ? Color.gray : .clear)
+                    .overlay { // hidden code obsecuring
+                        Selection.shape
+                            .foregroundStyle(code.isHidden ? Color.gray : .clear)
+                            .transaction { transaction in
+                                if code.isHidden {
+                                    transaction.animation = nil
+                                }
+                            }
+                            
+                            //.animation(nil, value: code.isHidden)
+                            
                     }
                     .onTapGesture {
                         if code.kind == .guess {
