@@ -30,7 +30,7 @@ struct CodeBreakerView: View {
                 if !game.isOver {
                     CodeView(code: game.guess,
                              selection: $selection)
-                 {guessButton}
+                    {guessButton}.animation(nil, value: game.attempts.count)
                 }
                 ForEach(game.attempts.indices.reversed(), id: \.self) { index in
                     CodeView(code: game.attempts[index]) {
