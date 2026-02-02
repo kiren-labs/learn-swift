@@ -19,15 +19,7 @@ struct CodeBreakerView: View {
     var body: some View {
         
         VStack {
-            Button("Restart") {
-                withAnimation(.restart){
-                    restarting = true
-                } completion: {
-                    game.restart()
-                    selection = 0
-                    restarting = false
-                }
-            }
+            Button("Restart", action: restart)
             CodeView(code: game.masterCode) {
                 Text("0:03").font(.title)
             }
@@ -35,7 +27,8 @@ struct CodeBreakerView: View {
                 if !game.isOver || restarting {
                     CodeView(code: game.guess,
                              selection: $selection) {
-                        guessButton
+                        Button("Guess", action: guess).flexibleSystemFont()
+                       
                     }
                         .animation(nil, value: game.attempts.count)
                         .opacity(restarting ? 0 : 1)
@@ -63,34 +56,36 @@ struct CodeBreakerView: View {
         game.setGuessPeg(peg, at: selection)
         selection = (selection + 1) % game.masterCode.pegs.count
     }
+    func restart() {
+        withAnimation(.restart){
+            restarting = true
+        } completion: {
+            game.restart()
+            selection = 0
+            restarting = false
+        }
+    }
     
-    var guessButton: some View {
-        Button("Guess") {
-            withAnimation(Animation.guess) {
-                game.attemptGuess()
-                selection = 0
-                hideMostRecentMarkers = true
-            } completion: {
-                withAnimation(.guess){
-                    hideMostRecentMarkers = false;
-                }
+    func guess() {
+        withAnimation(Animation.guess) {
+            game.attemptGuess()
+            selection = 0
+            hideMostRecentMarkers = true
+        } completion: {
+            withAnimation(.guess){
+                hideMostRecentMarkers = false;
             }
         }
-        .font(.system(size: GuessButton.maximunfontSize))
-        .minimumScaleFactor(GuessButton.scalefactor)
     }
-    
-
-    
-    
-    struct GuessButton {
-        static let minimunFontSize: CGFloat = 8
-        static let maximunfontSize: CGFloat = 80
-        static let scalefactor = minimunFontSize / maximunfontSize
-    }
-  
 }
 
+extension View {
+    func flexibleSystemFont(minimum: CGFloat =  8, maximum: CGFloat = 80) -> some View {
+        self
+            .font(.system(size: maximum))
+            .minimumScaleFactor(minimum/maximum)
+    }
+}
 extension Animation {
     static let codeBreaker = Animation.easeInOut(duration: 3)
     static let guess = Animation.codeBreaker
