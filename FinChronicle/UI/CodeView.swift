@@ -40,6 +40,7 @@ struct CodeView<AncillaryView>:View where AncillaryView: View {
                                 .foregroundStyle(Selection.color)
                         }
                     }
+                    .animation(.selection, value: selection)
                     .overlay { // hidden code obsecuring
                         Selection.shape
                             .foregroundStyle(code.isHidden ? Color.gray : .clear)
