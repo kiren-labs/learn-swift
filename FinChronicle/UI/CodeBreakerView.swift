@@ -19,7 +19,7 @@ struct CodeBreakerView: View {
     var body: some View {
         
         VStack {
-            Button("Restart", action: restart)
+            Button("Restart",systemImage: "arrow.circlepath" , action: restart)
             CodeView(code: game.masterCode) {
                 Text("0:03").font(.title)
             }
