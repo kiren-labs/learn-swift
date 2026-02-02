@@ -8,18 +8,18 @@
 import SwiftUI
 
 struct PegChooser: View {
-    @Binding var game: CodeBreaker
-    @Binding var selection: Int
+
+    let choices: [Peg]
+    let onChoose: (Peg) -> Void
+    
     var body: some View {
         HStack{
-            ForEach(game.pegChoices, id: \.self) {peg in
+            ForEach(choices, id: \.self) {peg in
                 Button{
-                    game.setGuessPeg(peg, at: selection)
-                    selection = (selection +  1) % game.masterCode.pegs.count
+                   onChoose(peg)
                 } label: {
                     PegsView(peg:peg)
                 }
-                
             }
         }
     }

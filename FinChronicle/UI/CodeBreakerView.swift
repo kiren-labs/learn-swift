@@ -34,7 +34,7 @@ struct CodeBreakerView: View {
                     }
                 }
             }
-            pegChooser(choices: game.pegChoices) {peg in
+            PegChooser(choices: game.pegChoices) {peg in
                 game.setGuessPeg(peg, at: selection)
                 selection = (selection + 1) % game.masterCode.pegs.count
             }
