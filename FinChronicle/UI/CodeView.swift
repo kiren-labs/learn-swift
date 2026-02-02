@@ -35,12 +35,13 @@ struct CodeView<AncillaryView>:View where AncillaryView: View {
                 PegsView(peg: code.pegs[index])
                     .padding(Selection.border)
                     .background { // selection background
-                        if selection == index, code.kind == .guess {
-                            Selection.shape
-                                .foregroundStyle(Selection.color)
-                        }
+                        Group {
+                            if selection == index, code.kind == .guess {
+                                Selection.shape
+                                    .foregroundStyle(Selection.color)
+                            }
+                        }.animation(.selection, value: selection)
                     }
-                    .animation(.selection, value: selection)
                     .overlay { // hidden code obsecuring
                         Selection.shape
                             .foregroundStyle(code.isHidden ? Color.gray : .clear)
