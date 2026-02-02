@@ -43,6 +43,7 @@ struct CodeBreakerView: View {
             }
             if !game.isOver {
                 PegChooser(choices: game.pegChoices, onChoose: changePegAtSelection)
+                    .transition(.move(edge: .bottom))
             }
         }.padding()
     }
