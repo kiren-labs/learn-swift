@@ -9,13 +9,20 @@ import SwiftUI
 
 struct CodeBreakerView: View {
     
-    //MARK
+    //MARK: Data owned by me
     @State private var game: CodeBreaker = CodeBreaker(pegChoices: [.blue, .green, .yellow, .orange])
     @State private var selection: Int = 0
     
+    // MARK: - Body
     var body: some View {
         
         VStack {
+            Button("Restart") {
+                withAnimation(.restart){
+                    game.restart()
+                    selection = 0
+                }
+            }
             CodeView(code: game.masterCode) {
                 Text("0:03").font(.title)
             }
@@ -66,7 +73,9 @@ struct CodeBreakerView: View {
 }
 
 extension Animation {
-    static let guess = Animation.easeInOut(duration: 3)
+    static let codeBreaker = Animation.easeInOut(duration: 3)
+    static let guess = Animation.codeBreaker
+    static let restart =  Animation.codeBreaker
 }
 
 extension Color {
