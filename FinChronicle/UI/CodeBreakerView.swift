@@ -12,6 +12,7 @@ struct CodeBreakerView: View {
     //MARK: Data owned by me
     @State private var game: CodeBreaker = CodeBreaker(pegChoices: [.blue, .green, .yellow, .orange])
     @State private var selection: Int = 0
+    @State private var restarting = false
     
     // MARK: - Body
     var body: some View {
@@ -19,15 +20,18 @@ struct CodeBreakerView: View {
         VStack {
             Button("Restart") {
                 withAnimation(.restart){
+                    restarting = true
+                } completion: {
                     game.restart()
                     selection = 0
+                    restarting = false
                 }
             }
             CodeView(code: game.masterCode) {
                 Text("0:03").font(.title)
             }
             ScrollView {
-                if !game.isOver {
+                if !game.isOver || restarting {
                     CodeView(code: game.guess,
                              selection: $selection)
                     {guessButton}.animation(nil, value: game.attempts.count)
