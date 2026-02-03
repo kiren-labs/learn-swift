@@ -21,7 +21,7 @@ struct CodeBreakerView: View {
         VStack {
             Button("Restart",systemImage: "arrow.circlepath" , action: restart)
             CodeView(code: game.masterCode) {
-                Text("0:03").font(.title)
+                ElapsedTime(startTime: game.startTime, endTime: game.endTime)
             }
             ScrollView {
                 if !game.isOver {
