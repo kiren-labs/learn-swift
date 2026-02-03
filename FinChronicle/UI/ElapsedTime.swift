@@ -17,7 +17,7 @@ struct ElapsedTime: View {
             Text(endTime, format: .offset(to: startTime, allowedFields: [.minute, .second]))
 
         } else {
-            Text(TimeDataSource<Date>.currentDate, format: .offset(to: startTime, allowedFields: [.minute, .second]))
+            Text(.now, format: .offset(to: startTime, allowedFields: [.minute, .second]))
         }
     }
 }
