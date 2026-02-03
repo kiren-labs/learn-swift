@@ -107,3 +107,6 @@ iOSInjectionProject/
 # Backup files
 *.bak
 *.backup
+
+.claude/*
+
