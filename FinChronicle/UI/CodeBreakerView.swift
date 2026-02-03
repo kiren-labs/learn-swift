@@ -24,7 +24,7 @@ struct CodeBreakerView: View {
                 Text("0:03").font(.title)
             }
             ScrollView {
-                if !game.isOver || restarting {
+                if !game.isOver {
                     CodeView(code: game.guess,
                              selection: $selection) {
                         Button("Guess", action: guess).flexibleSystemFont()
@@ -58,10 +58,10 @@ struct CodeBreakerView: View {
     }
     func restart() {
         withAnimation(.restart){
-            restarting = true
-        } completion: {
+            restarting = game.isOver
             game.restart()
             selection = 0
+        } completion: {
             restarting = false
         }
     }

@@ -17,7 +17,7 @@ extension View {
     }
 }
 extension Animation {
-    static let codeBreaker = Animation.bouncy
+    static let codeBreaker = Animation.easeInOut(duration: 2)
     static let guess = Animation.codeBreaker
     static let restart =  Animation.codeBreaker
     static let selection =  Animation.codeBreaker
