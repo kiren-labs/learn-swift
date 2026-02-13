@@ -33,12 +33,12 @@ struct CodeBreakerView: View {
                         .animation(nil, value: game.attempts.count)
                         .opacity(restarting ? 0 : 1)
                 }
-                ForEach(game.attempts.indices.reversed(), id: \.self) { index in
+                ForEach(game.attempts.reversed(), id: \.self) { attempt in
                    
-                    CodeView(code: game.attempts[index]) {
-                        let showMarkers = !hideMostRecentMarkers || index != game.attempts.count - 1
+                    CodeView(code: attempt) {
+                        let showMarkers = !hideMostRecentMarkers || attempt.pegs != game.attempts.last?.pegs
                         
-                        if showMarkers, let matches = game.attempts[index].matches
+                        if showMarkers, let matches = attempt.matches
                         {
                             MatchMarkers(matches: matches)
                         }

@@ -9,12 +9,12 @@
 import SwiftUI
 
 /// Represents a code consisting of pegs and its type (master, guess, attempt).
-struct Code {
+struct Code: Hashable {
     var kind: Kind
     var pegs: [Peg] = Array(repeating: Code.missingPeg, count: 4)
     static let missingPeg: Peg = Color.missing
     
-    enum Kind: Equatable {
+    enum Kind: Hashable,Equatable {
         case master(isHidden:Bool)
         case guess
         case attempt([Match])
