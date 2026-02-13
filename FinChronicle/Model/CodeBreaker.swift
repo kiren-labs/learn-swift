@@ -36,6 +36,7 @@ struct CodeBreaker {
     }
     
     mutating func attemptGuess() {
+        guard !attempts.contains(where: {$0.pegs == guess.pegs}) else { return }
         var attempt =  guess
         attempt.kind = .attempt(guess.match(against: masterCode))
         attempts.append(attempt)
