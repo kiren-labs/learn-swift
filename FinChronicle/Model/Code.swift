@@ -9,9 +9,7 @@
 import SwiftUI
 
 /// Represents a code consisting of pegs and its type (master, guess, attempt).
-struct Code: Identifiable {
-    var id: [Peg] {pegs}
-    
+struct Code {
     var kind: Kind
     var pegs: [Peg] = Array(repeating: Code.missingPeg, count: 4)
     static let missingPeg: Peg = Color.missing

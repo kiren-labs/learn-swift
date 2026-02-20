@@ -33,7 +33,7 @@ struct CodeBreakerView: View {
                         .animation(nil, value: game.attempts.count)
                         .opacity(restarting ? 0 : 1)
                 }
-                ForEach(game.attempts) { attempt in
+                ForEach(game.attempts, id: \.pegs) { attempt in
                    
                     CodeView(code: attempt) {
                         let showMarkers = !hideMostRecentMarkers || attempt.pegs != game.attempts.first?.pegs
